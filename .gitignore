@@ -1,0 +1,18 @@
+# Logs and runtime
+*.log
+__pycache__/
+.venv/
+env/
+venv/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Build artifacts
+dist/
+build/
+*.zip

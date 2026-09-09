@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none" stroke="currentColor">
+  <!-- Geometric Concentric Rings & Compass Grid -->
+  <circle cx="250" cy="250" r="230" stroke="#3b82f6" stroke-width="0.75" stroke-dasharray="4 6" opacity="0.4"/>
+  <circle cx="250" cy="250" r="180" stroke="#60a5fa" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="250" cy="250" r="120" stroke="#ffffff" stroke-width="0.75" opacity="0.2"/>
+  <circle cx="250" cy="250" r="70" stroke="#3b82f6" stroke-width="0.5" stroke-dasharray="2 4" opacity="0.4"/>
+
+  <!-- Radial Rays & Energy Filaments -->
+  <line x1="250" y1="20" x2="250" y2="480" stroke="#ffffff" stroke-width="0.5" opacity="0.25"/>
+  <line x1="20" y1="250" x2="480" y2="250" stroke="#ffffff" stroke-width="0.5" opacity="0.25"/>
+  <line x1="87" y1="87" x2="413" y2="413" stroke="#3b82f6" stroke-width="0.5" opacity="0.2"/>
+  <line x1="87" y1="413" x2="413" y2="87" stroke="#3b82f6" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- Winged Helmet / Mercury Caduceus Center Motif -->
+  <g transform="translate(250, 240) scale(1.4)" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Center Staff -->
+    <line x1="0" y1="-50" x2="0" y2="50" stroke="#60a5fa" stroke-width="1.5"/>
+    <circle cx="0" cy="-52" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1"/>
+    
+    <!-- Entwined Serpents / Energy Waves -->
+    <path d="M-15 -30 C -25 -20, -5 -10, 0 0 C 5 10, 25 20, 15 30" stroke="#93c5fd" stroke-width="1.2"/>
+    <path d="M15 -30 C 25 -20, 5 -10, 0 0 C -5 10, -25 20, -15 30" stroke="#93c5fd" stroke-width="1.2"/>
+    
+    <!-- Left Wing (Fine Engraved Feathers) -->
+    <path d="M-2 -40 C -15 -55, -45 -50, -50 -30 C -52 -15, -40 -5, -20 -10 C -10 -12, -2 -25, -2 -40 Z" stroke="#ffffff" stroke-width="1.2"/>
+    <path d="M-45 -30 C -35 -25, -25 -20, -15 -25"/>
+    <path d="M-40 -20 C -30 -15, -20 -15, -10 -20"/>
+    <path d="M-30 -10 C -20 -8, -10 -10, -2 -15"/>
+
+    <!-- Right Wing (Fine Engraved Feathers) -->
+    <path d="M2 -40 C 15 -55, 45 -50, 50 -30 C 52 -15, 40 -5, 20 -10 C 10 -12, 2 -25, 2 -40 Z" stroke="#ffffff" stroke-width="1.2"/>
+    <path d="M45 -30 C 35 -25, 25 -20, 15 -25"/>
+    <path d="M40 -20 C 30 -15, 20 -15, 10 -20"/>
+    <path d="M30 -10 C 20 -8, 10 -10, 2 -15"/>
+  </g>
+
+  <!-- Stars & Constellations -->
+  <g fill="#ffffff" opacity="0.6">
+    <circle cx="120" cy="140" r="1.5"/>
+    <circle cx="380" cy="140" r="1.5"/>
+    <circle cx="100" cy="360" r="1.5"/>
+    <circle cx="400" cy="360" r="1.5"/>
+    <circle cx="250" cy="60" r="2" fill="#60a5fa"/>
+    <circle cx="250" cy="440" r="2" fill="#60a5fa"/>
+  </g>
+</svg>

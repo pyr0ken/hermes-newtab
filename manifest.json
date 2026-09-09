@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Hermes NewTab",
+  "version": "1.0.0",
+  "description": "Ultra-fast, Hermes-styled personal browser new tab extension & system dashboard.",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": [
+    "bookmarks",
+    "topSites",
+    "storage",
+    "favicon"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:*/*",
+    "http://localhost:*/*"
+  ],
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  }
+}
