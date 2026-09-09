@@ -101,10 +101,65 @@ class CommandPalette {
     return null;
   }
 
+  isDirectUrl(str) {
+    if (!str) return false;
+    const s = str.trim();
+    if (/^https?:\/\//i.test(s)) return true;
+    if (/^(localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?(\/.*)?$/i.test(s)) return true;
+    if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(:\d+)?(\/.*)?$/i.test(s)) return true;
+    return false;
+  }
+
+  formatDirectUrl(str) {
+    const s = str.trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    if (/^(localhost|127\.0\.0\.1)/i.test(s)) return 'http://' + s;
+    return 'https://' + s;
+  }
+
+  extractDomain(url) {
+    try {
+      const u = new URL(url);
+      return u.hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
+  }
+
   onQueryChange(rawQuery) {
     const query = rawQuery.trim();
     if (!query) {
       this.hideResults();
+      return;
+    }
+
+    // Check for direct URL / domain input (e.g. git.ir, github.com, http://localhost:3000)
+    if (this.isDirectUrl(query)) {
+      const targetUrl = this.formatDirectUrl(query);
+      const displayHost = targetUrl.replace(/^https?:\/\//i, '');
+      const matchedBookmarks = window.bookmarksEngine 
+        ? window.bookmarksEngine.searchBookmarks(query) 
+        : [];
+
+      this.results = [
+        {
+          type: 'url',
+          title: `Open https://${displayHost}`,
+          url: targetUrl,
+          domain: displayHost,
+          icon: 'external'
+        },
+        ...matchedBookmarks.map(bm => ({
+          type: 'bookmark',
+          title: bm.title,
+          url: bm.url,
+          domain: bm.domain,
+          category: bm.category,
+          favicon: bm.favicon
+        }))
+      ];
+      this.selectedIndex = 0;
+      this.renderResults();
       return;
     }
 
@@ -232,9 +287,16 @@ class CommandPalette {
 
     // Attach click listeners to rows
     this.resultsDropdown.querySelectorAll('.search-result-item').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         const idx = parseInt(item.dataset.index, 10);
-        this.navigateToResult(idx);
+        const openInNewTab = e.ctrlKey || e.metaKey || e.button === 1;
+        this.navigateToResult(idx, openInNewTab);
+      });
+      item.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // Middle click
+          const idx = parseInt(item.dataset.index, 10);
+          this.navigateToResult(idx, true);
+        }
       });
     });
   }
@@ -262,7 +324,8 @@ class CommandPalette {
       }
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      this.submitCurrentQuery();
+      const openInNewTab = e.ctrlKey || e.metaKey;
+      this.submitCurrentQuery(openInNewTab);
     }
   }
 
@@ -279,30 +342,40 @@ class CommandPalette {
     });
   }
 
-  submitCurrentQuery() {
+  openUrl(targetUrl, openInNewTab = false) {
+    if (!targetUrl) return;
+    if (openInNewTab) {
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+        chrome.tabs.create({ url: targetUrl, active: true });
+      } else {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      }
+    } else {
+      window.location.href = targetUrl;
+    }
+  }
+
+  submitCurrentQuery(openInNewTab = false) {
     if (this.selectedIndex >= 0 && this.results[this.selectedIndex]) {
-      this.navigateToResult(this.selectedIndex);
+      this.navigateToResult(this.selectedIndex, openInNewTab);
       return;
     }
 
     const query = (this.searchInput.value || '').trim();
     if (!query) return;
 
-    // Check if query is URL
-    if (/^https?:\/\//i.test(query)) {
-      window.location.href = query;
-      return;
-    }
-    if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/i.test(query)) {
-      window.location.href = 'https://' + query;
+    // Check if query is direct URL / domain
+    if (this.isDirectUrl(query)) {
+      this.openUrl(this.formatDirectUrl(query), openInNewTab);
       return;
     }
 
     // Fallback to Google Search
-    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    this.openUrl(searchUrl, openInNewTab);
   }
 
-  navigateToResult(index) {
+  navigateToResult(index, openInNewTab = false) {
     const item = this.results[index];
     if (!item) return;
 
@@ -322,7 +395,7 @@ class CommandPalette {
     }
 
     if (item.url) {
-      window.location.href = item.url;
+      this.openUrl(item.url, openInNewTab);
     }
   }
 
