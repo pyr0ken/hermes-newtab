@@ -1,17 +1,21 @@
-// Bookmarks & Speed Dial Engine with Two-Layer Architecture
+// Bookmarks & Speed Dial Engine with Full Drag & Drop (Folders + Quick Access)
 
 class BookmarksEngine {
   constructor() {
     this.bookmarks = [];
     this.pinnedBookmarks = [];
     this.folders = new Map(); // folderName -> [bookmarks]
+    this.folderNodeIds = new Map(); // folderName -> chromeNodeId
     this.currentFolder = localStorage.getItem('hermes_last_folder') || 'all';
     this.viewMode = localStorage.getItem('hermes_bookmark_view') || 'grid'; // 'grid' | 'list'
+    this.isDragging = false;
+    this.activeDragPayload = null;
 
     this.refreshElements();
   }
 
   refreshElements() {
+    this.pinnedSectionEl = document.querySelector('.pinned-section');
     this.pinnedGridEl = document.getElementById('pinned-grid');
     this.gridElement = document.getElementById('bookmarks-grid');
     this.tabsElement = document.getElementById('category-tabs');
@@ -37,6 +41,7 @@ class BookmarksEngine {
   async loadBookmarks() {
     this.bookmarks = [];
     this.folders.clear();
+    this.folderNodeIds.clear();
 
     if (typeof chrome !== 'undefined' && chrome.bookmarks && chrome.bookmarks.getTree) {
       try {
@@ -59,7 +64,7 @@ class BookmarksEngine {
     this.loadFallbackBookmarks();
   }
 
-  parseBookmarkTree(nodes, currentCategory = 'General') {
+  parseBookmarkTree(nodes, currentCategory = 'General', currentFolderNodeId = '1') {
     if (!nodes || !Array.isArray(nodes)) return;
 
     for (const node of nodes) {
@@ -69,6 +74,7 @@ class BookmarksEngine {
           title: (node.title || '').trim() || 'Untitled',
           url: node.url,
           category: currentCategory,
+          parentId: node.parentId || currentFolderNodeId,
           domain: this.extractDomain(node.url),
           favicon: this.getFaviconUrl(node.url)
         };
@@ -85,28 +91,33 @@ class BookmarksEngine {
         const catName = (node.title && !isRootIgnored)
           ? node.title 
           : currentCategory;
-        this.parseBookmarkTree(node.children, catName);
+
+        if (node.title && !isRootIgnored) {
+          this.folderNodeIds.set(node.title, node.id);
+        }
+
+        this.parseBookmarkTree(node.children, catName, node.id);
       }
     }
   }
 
   loadFallbackBookmarks() {
     const defaults = [
-      { title: 'ChatGPT', url: 'https://chatgpt.com', category: 'Chatbots' },
-      { title: 'Claude AI', url: 'https://claude.ai', category: 'Chatbots' },
-      { title: 'Perplexity AI', url: 'https://perplexity.ai', category: 'Chatbots' },
-      { title: 'DeepSeek', url: 'https://chat.deepseek.com', category: 'Chatbots' },
-      { title: 'GitHub', url: 'https://github.com', category: 'Dev' },
-      { title: 'Hermes Agent Docs', url: 'https://hermes-agent.nousresearch.com/docs', category: 'Dev' },
-      { title: 'Arch Linux Wiki', url: 'https://wiki.archlinux.org', category: 'Dev' },
-      { title: 'Hugging Face', url: 'https://huggingface.co', category: 'Google AI' },
-      { title: 'arXiv AI/CS', url: 'https://arxiv.org', category: 'Courses & Data' },
-      { title: 'Figma', url: 'https://figma.com', category: 'Image & Creative' }
+      { id: '1', title: 'ChatGPT', url: 'https://chatgpt.com', category: 'Chatbots' },
+      { id: '2', title: 'Claude AI', url: 'https://claude.ai', category: 'Chatbots' },
+      { id: '3', title: 'Perplexity AI', url: 'https://perplexity.ai', category: 'Chatbots' },
+      { id: '4', title: 'DeepSeek', url: 'https://chat.deepseek.com', category: 'Chatbots' },
+      { id: '5', title: 'GitHub', url: 'https://github.com', category: 'Dev' },
+      { id: '6', title: 'Hermes Agent Docs', url: 'https://hermes-agent.nousresearch.com/docs', category: 'Dev' },
+      { id: '7', title: 'Arch Linux Wiki', url: 'https://wiki.archlinux.org', category: 'Dev' },
+      { id: '8', title: 'Hugging Face', url: 'https://huggingface.co', category: 'Google AI' },
+      { id: '9', title: 'arXiv AI/CS', url: 'https://arxiv.org', category: 'Courses & Data' },
+      { id: '10', title: 'Figma', url: 'https://figma.com', category: 'Image & Creative' }
     ];
 
     for (const d of defaults) {
       const item = {
-        id: String(Math.random()),
+        id: d.id,
         title: d.title,
         url: d.url,
         category: d.category,
@@ -144,6 +155,7 @@ class BookmarksEngine {
         const topSites = await new Promise(resolve => chrome.topSites.get(resolve));
         if (topSites && Array.isArray(topSites) && topSites.length > 0) {
           this.pinnedBookmarks = topSites.slice(0, 10).map(s => ({
+            id: String(Math.random()),
             title: s.title || this.extractDomain(s.url),
             url: s.url,
             domain: this.extractDomain(s.url),
@@ -217,10 +229,9 @@ class BookmarksEngine {
     if (!this.pinnedGridEl) return;
 
     const cardsHtml = this.pinnedBookmarks.map((bm, idx) => `
-      <a 
-        href="${bm.url}" 
+      <div 
         class="pinned-card" 
-        title="${this.escapeHtml(bm.title)} (${bm.url})" 
+        title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to reorder" 
         draggable="true" 
         data-pinned-index="${idx}"
         data-url="${bm.url}"
@@ -233,7 +244,7 @@ class BookmarksEngine {
           onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2360a5fa\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/></svg>'" 
         />
         <span class="pinned-title">${this.escapeHtml(bm.title)}</span>
-      </a>
+      </div>
     `).join('');
 
     const addCardHtml = `
@@ -257,7 +268,7 @@ class BookmarksEngine {
       const count = cat === 'all' ? this.bookmarks.length : (this.folders.get(cat) || []).length;
       const activeClass = this.currentFolder === cat ? 'active' : '';
       return `
-        <button class="category-tab ${activeClass}" data-folder="${this.escapeHtml(cat)}">
+        <button class="category-tab ${activeClass}" data-folder="${this.escapeHtml(cat)}" title="Click to view or drop bookmarks here">
           <span>${this.escapeHtml(label)}</span>
           <span class="tab-badge">${count}</span>
         </button>
@@ -271,6 +282,8 @@ class BookmarksEngine {
         activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }, 50);
     }
+
+    this.setupCategoryDropEvents();
   }
 
   renderFolderView() {
@@ -297,16 +310,18 @@ class BookmarksEngine {
 
     if (this.viewMode === 'list') {
       this.gridElement.className = 'bookmarks-list';
-      this.gridElement.innerHTML = items.map(bm => `
-        <a 
-          href="${bm.url}" 
+      this.gridElement.innerHTML = items.map((bm, idx) => `
+        <div 
           class="bookmark-list-row" 
-          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Quick Access"
+          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Quick Access or Folders"
           draggable="true"
+          data-bm-index="${idx}"
+          data-bm-id="${bm.id}"
           data-bm-title="${this.escapeHtml(bm.title)}"
           data-bm-url="${bm.url}"
           data-bm-domain="${this.escapeHtml(bm.domain)}"
           data-bm-favicon="${bm.favicon}"
+          data-bm-category="${this.escapeHtml(bm.category)}"
         >
           <div class="bookmark-list-left">
             <img 
@@ -320,21 +335,23 @@ class BookmarksEngine {
           <div class="bookmark-list-right">
             <span class="bookmark-list-domain">${this.escapeHtml(bm.domain)}</span>
           </div>
-        </a>
+        </div>
       `).join('');
     } else {
       // Default: Responsive Grid
       this.gridElement.className = 'bookmarks-grid';
-      this.gridElement.innerHTML = items.map(bm => `
-        <a 
-          href="${bm.url}" 
+      this.gridElement.innerHTML = items.map((bm, idx) => `
+        <div 
           class="bookmark-card" 
-          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Quick Access"
+          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Quick Access or Folders"
           draggable="true"
+          data-bm-index="${idx}"
+          data-bm-id="${bm.id}"
           data-bm-title="${this.escapeHtml(bm.title)}"
           data-bm-url="${bm.url}"
           data-bm-domain="${this.escapeHtml(bm.domain)}"
           data-bm-favicon="${bm.favicon}"
+          data-bm-category="${this.escapeHtml(bm.category)}"
         >
           <img 
             src="${bm.favicon}" 
@@ -346,26 +363,42 @@ class BookmarksEngine {
             <span class="bookmark-name">${this.escapeHtml(bm.title)}</span>
             <span class="bookmark-domain">${this.escapeHtml(bm.domain)}</span>
           </div>
-        </a>
+        </div>
       `).join('');
     }
 
     this.setupFolderDragEvents();
   }
 
+  openBookmarkUrl(url, e) {
+    if (!url) return;
+    const inNewTab = e.ctrlKey || e.metaKey || e.button === 1;
+    if (inNewTab) {
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+        chrome.tabs.create({ url, active: true });
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    } else {
+      window.location.href = url;
+    }
+  }
+
   setupPinnedEvents() {
     this.refreshElements();
     if (!this.pinnedGridEl) return;
 
-    // Prevent default click while dragging
+    // Card Clicks (Open URL if not dragged)
     this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        if (this.isDraggingBookmark) {
+      card.onclick = (e) => {
+        if (this.isDragging) {
           e.preventDefault();
-          e.stopPropagation();
-          return false;
+          return;
         }
-      });
+        if (e.target.closest('.btn-unpin')) return;
+        const url = card.dataset.url;
+        this.openBookmarkUrl(url, e);
+      };
     });
 
     // Unpin button clicks
@@ -395,6 +428,7 @@ class BookmarksEngine {
         const rawTitle = prompt('Enter Website Title:', domain) || domain;
 
         this.pinnedBookmarks.push({
+          id: String(Math.random()),
           title: rawTitle.trim(),
           url: formattedUrl,
           domain: domain,
@@ -409,28 +443,28 @@ class BookmarksEngine {
     this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
       card.ondragstart = (e) => {
         const idx = parseInt(card.dataset.pinnedIndex, 10);
-        this.isDraggingBookmark = true;
-        card.classList.add('is-dragging');
-        const payload = {
+        this.isDragging = true;
+        window._activeDragItem = {
           type: 'pinned-reorder',
           sourceIndex: idx,
           data: this.pinnedBookmarks[idx]
         };
-        window._draggedBookmark = payload;
-        e.dataTransfer.effectAllowed = 'move';
+        this.activeDragPayload = window._activeDragItem;
+        card.classList.add('is-dragging');
+        e.dataTransfer.effectAllowed = 'copyMove';
         try {
-          e.dataTransfer.setData('application/json', JSON.stringify(payload));
-          e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+          e.dataTransfer.setData('text/plain', JSON.stringify(window._activeDragItem));
         } catch {}
       };
 
       card.ondragend = () => {
         card.classList.remove('is-dragging');
-        document.querySelectorAll('.drag-over, .dropzone-active').forEach(el => el.classList.remove('drag-over', 'dropzone-active'));
+        document.querySelectorAll('.drag-over, .dropzone-active, .tab-drag-over').forEach(el => el.classList.remove('drag-over', 'dropzone-active', 'tab-drag-over'));
         setTimeout(() => {
-          this.isDraggingBookmark = false;
-          window._draggedBookmark = null;
-        }, 200);
+          this.isDragging = false;
+          this.activeDragPayload = null;
+          window._activeDragItem = null;
+        }, 150);
       };
 
       card.ondragover = (e) => {
@@ -450,10 +484,10 @@ class BookmarksEngine {
         card.classList.remove('drag-over');
 
         const targetIndex = parseInt(card.dataset.pinnedIndex, 10);
-        let payload = window._draggedBookmark;
+        let payload = this.activeDragPayload || window._activeDragItem;
         if (!payload) {
           try {
-            const raw = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
+            const raw = e.dataTransfer.getData('text/plain');
             if (raw) payload = JSON.parse(raw);
           } catch {}
         }
@@ -485,7 +519,7 @@ class BookmarksEngine {
       };
     });
 
-    // General pinned grid drop zone
+    // General pinned grid drop zone (appends to end)
     this.pinnedGridEl.ondragover = (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
@@ -503,10 +537,10 @@ class BookmarksEngine {
       e.preventDefault();
       this.pinnedGridEl.classList.remove('dropzone-active');
 
-      let payload = window._draggedBookmark;
+      let payload = this.activeDragPayload || window._activeDragItem;
       if (!payload) {
         try {
-          const raw = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
+          const raw = e.dataTransfer.getData('text/plain');
           if (raw) payload = JSON.parse(raw);
         } catch {}
       }
@@ -527,42 +561,125 @@ class BookmarksEngine {
     if (!this.gridElement) return;
 
     this.gridElement.querySelectorAll('.bookmark-card, .bookmark-list-row').forEach(el => {
-      el.addEventListener('click', (e) => {
-        if (this.isDraggingBookmark) {
+      el.onclick = (e) => {
+        if (this.isDragging) {
           e.preventDefault();
-          e.stopPropagation();
-          return false;
+          return;
         }
-      });
+        const url = el.dataset.bmUrl;
+        this.openBookmarkUrl(url, e);
+      };
 
       el.ondragstart = (e) => {
-        this.isDraggingBookmark = true;
+        this.isDragging = true;
         el.classList.add('is-dragging');
         const itemData = {
+          id: el.dataset.bmId,
           title: el.dataset.bmTitle || 'Bookmark',
           url: el.dataset.bmUrl,
           domain: el.dataset.bmDomain || this.extractDomain(el.dataset.bmUrl),
-          favicon: el.dataset.bmFavicon || this.getFaviconUrl(el.dataset.bmUrl)
+          favicon: el.dataset.bmFavicon || this.getFaviconUrl(el.dataset.bmUrl),
+          category: el.dataset.bmCategory || 'General'
         };
         const payload = {
           type: 'folder-bookmark',
           data: itemData
         };
-        window._draggedBookmark = payload;
-        e.dataTransfer.effectAllowed = 'copy';
+        window._activeDragItem = payload;
+        this.activeDragPayload = payload;
+        e.dataTransfer.effectAllowed = 'copyMove';
         try {
-          e.dataTransfer.setData('application/json', JSON.stringify(payload));
           e.dataTransfer.setData('text/plain', JSON.stringify(payload));
         } catch {}
       };
 
       el.ondragend = () => {
         el.classList.remove('is-dragging');
-        document.querySelectorAll('.drag-over, .dropzone-active').forEach(item => item.classList.remove('drag-over', 'dropzone-active'));
+        document.querySelectorAll('.drag-over, .dropzone-active, .tab-drag-over').forEach(item => item.classList.remove('drag-over', 'dropzone-active', 'tab-drag-over'));
         setTimeout(() => {
-          this.isDraggingBookmark = false;
-          window._draggedBookmark = null;
-        }, 200);
+          this.isDragging = false;
+          this.activeDragPayload = null;
+          window._activeDragItem = null;
+        }, 150);
+      };
+    });
+  }
+
+  setupCategoryDropEvents() {
+    this.refreshElements();
+    if (!this.tabsElement) return;
+
+    this.tabsElement.querySelectorAll('.category-tab').forEach(tab => {
+      tab.ondragover = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'move';
+        tab.classList.add('tab-drag-over');
+      };
+
+      tab.ondragleave = () => {
+        tab.classList.remove('tab-drag-over');
+      };
+
+      tab.ondrop = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        tab.classList.remove('tab-drag-over');
+
+        const targetFolder = tab.dataset.folder;
+        if (!targetFolder || targetFolder === 'all') return;
+
+        let payload = this.activeDragPayload || window._activeDragItem;
+        if (!payload) {
+          try {
+            const raw = e.dataTransfer.getData('text/plain');
+            if (raw) payload = JSON.parse(raw);
+          } catch {}
+        }
+
+        if (payload && payload.data && payload.data.url) {
+          const item = payload.data;
+          const oldFolder = item.category || 'General';
+
+          if (oldFolder === targetFolder) return;
+
+          // 1. If Chrome bookmarks API available, move in Chrome tree
+          if (item.id && typeof chrome !== 'undefined' && chrome.bookmarks && chrome.bookmarks.move) {
+            const destFolderNodeId = this.folderNodeIds.get(targetFolder);
+            if (destFolderNodeId) {
+              try {
+                await new Promise((resolve) => {
+                  chrome.bookmarks.move(item.id, { parentId: destFolderNodeId }, resolve);
+                });
+              } catch (err) {
+                console.warn('Chrome bookmarks.move error:', err);
+              }
+            }
+          }
+
+          // 2. Update memory structures
+          if (this.folders.has(oldFolder)) {
+            const arr = this.folders.get(oldFolder);
+            const idx = arr.findIndex(b => b.url === item.url);
+            if (idx >= 0) arr.splice(idx, 1);
+          }
+
+          item.category = targetFolder;
+          if (!this.folders.has(targetFolder)) {
+            this.folders.set(targetFolder, []);
+          }
+          this.folders.get(targetFolder).push(item);
+
+          const mainItem = this.bookmarks.find(b => b.url === item.url);
+          if (mainItem) mainItem.category = targetFolder;
+
+          // 3. Switch view to that folder
+          this.currentFolder = targetFolder;
+          localStorage.setItem('hermes_last_folder', targetFolder);
+
+          this.renderCategoryTabs();
+          this.renderFolderView();
+        }
       };
     });
   }
