@@ -17,12 +17,34 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 PORT = 20250
 HOST = "127.0.0.1"
 
-# Known local developer service ports to probe
+# Known local developer service configurations & commands
 WATCHED_SERVICES = {
-    "oxiroute": {"name": "Oxiroute AI", "port": 20200},
-    "paperclip": {"name": "Paperclip Control", "port": 3100},
-    "golestan": {"name": "Golestan Automation", "port": 8000},
-    "omniroute": {"name": "OmniRoute", "port": 20128}
+    "paperclip": {
+        "name": "Paperclip Control",
+        "port": 3100,
+        "desc": "Agent Control Plane",
+        "systemd": "paperclipai.service"
+    },
+    "omniroute": {
+        "name": "OmniRoute Gateway",
+        "port": 20128,
+        "desc": "Local AI Gateway",
+        "systemd": "omniroute.service"
+    },
+    "oxiroute": {
+        "name": "Oxiroute AI",
+        "port": 20200,
+        "desc": "Rust AI Router",
+        "workdir": "/home/omid/Code/ai/oxiroute",
+        "start_cmd": "cargo run --release --bin oxiroute"
+    },
+    "golestan": {
+        "name": "Golestan Automation",
+        "port": 7667,
+        "desc": "Portal Client API",
+        "workdir": "/home/omid/Code/fun/golestan-automation",
+        "start_cmd": "/home/omid/Code/fun/golestan-automation/.venv/bin/python main.py serve --port 7667"
+    }
 }
 
 class SystemMetrics:
@@ -99,20 +121,75 @@ class SystemMetrics:
         return {"name": "N/A", "util_percent": 0, "temp_c": 0, "vram_used_mb": 0, "vram_total_mb": 0, "available": False}
 
     @staticmethod
-    def check_service_port(port: int) -> bool:
+    def check_service_port(port: int) -> tuple:
+        t0 = time.perf_counter()
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.15):
-                return True
+                lat_ms = round((time.perf_counter() - t0) * 1000, 1)
+                return True, lat_ms
         except (socket.timeout, ConnectionRefusedError, OSError):
-            return False
+            return False, 0.0
+
+
+class ServiceManager:
+    @staticmethod
+    def start_service(svc_key: str) -> dict:
+        info = WATCHED_SERVICES.get(svc_key)
+        if not info:
+            return {"success": False, "error": "Unknown service"}
+
+        port = info["port"]
+        is_alive, _ = SystemMetrics.check_service_port(port)
+        if is_alive:
+            return {"success": True, "online": True, "message": "Already running"}
+
+        systemd_svc = info.get("systemd")
+        if systemd_svc:
+            subprocess.run(["systemctl", "--user", "start", systemd_svc], check=False)
+        elif "start_cmd" in info:
+            workdir = info.get("workdir")
+            subprocess.Popen(
+                info["start_cmd"],
+                shell=True,
+                cwd=workdir,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True
+            )
+
+        # Brief pause to verify socket
+        time.sleep(0.6)
+        is_now_alive, lat = SystemMetrics.check_service_port(port)
+        return {"success": True, "online": is_now_alive, "latency_ms": lat}
+
+    @staticmethod
+    def stop_service(svc_key: str) -> dict:
+        info = WATCHED_SERVICES.get(svc_key)
+        if not info:
+            return {"success": False, "error": "Unknown service"}
+
+        systemd_svc = info.get("systemd")
+        if systemd_svc:
+            subprocess.run(["systemctl", "--user", "stop", systemd_svc], check=False)
+
+        # Terminate by port
+        port = info["port"]
+        try:
+            subprocess.run(["fuser", "-k", f"{port}/tcp"], capture_output=True, check=False)
+        except Exception:
+            pass
+
+        time.sleep(0.3)
+        is_still_alive, _ = SystemMetrics.check_service_port(port)
+        return {"success": True, "online": is_still_alive}
 
 
 class BridgeRequestHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
     def do_GET(self):
@@ -123,11 +200,14 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
 
             services = {}
             for key, info in WATCHED_SERVICES.items():
-                is_alive = SystemMetrics.check_service_port(info["port"])
+                is_alive, lat_ms = SystemMetrics.check_service_port(info["port"])
                 services[key] = {
+                    "key": key,
                     "name": info["name"],
                     "port": info["port"],
-                    "online": is_alive
+                    "desc": info.get("desc", ""),
+                    "online": is_alive,
+                    "latency_ms": lat_ms if is_alive else None
                 }
 
             payload = {
@@ -150,8 +230,47 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+    def do_POST(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+        
+        try:
+            params = json.loads(body)
+        except Exception:
+            params = {}
+
+        svc_key = str(params.get("service", ""))
+
+        if self.path == "/api/service/start":
+            res = ServiceManager.start_service(svc_key)
+            self._send_json(res)
+        elif self.path == "/api/service/stop":
+            res = ServiceManager.stop_service(svc_key)
+            self._send_json(res)
+        elif self.path == "/api/service/toggle":
+            info = WATCHED_SERVICES.get(svc_key)
+            if info:
+                is_alive, _ = SystemMetrics.check_service_port(info["port"])
+                if is_alive:
+                    res = ServiceManager.stop_service(svc_key)
+                else:
+                    res = ServiceManager.start_service(svc_key)
+                self._send_json(res)
+            else:
+                self._send_json({"success": False, "error": "Unknown service"})
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def _send_json(self, data: dict, status: int = 200):
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode("utf-8"))
+
     def log_message(self, format, *args):
-        # Suppress routine HTTP log spam for quiet execution
+        # Suppress routine log messages
         pass
 
 def run():

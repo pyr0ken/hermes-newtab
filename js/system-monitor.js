@@ -102,24 +102,98 @@ class SystemMonitor {
       }
     }
 
-    // Services
-    if (data.services) {
-      for (const [key, svc] of Object.entries(data.services)) {
-        const dot = document.getElementById(`svc-dot-${svc.port}`);
-        const badge = document.getElementById(`svc-badge-${svc.port}`);
+    // Services Interactive Control Matrix
+    if (data.services && this.elements.servicesList) {
+      this.elements.servicesList.innerHTML = Object.entries(data.services).map(([key, svc]) => {
+        const isOnline = svc.online;
+        const dotClass = isOnline ? 'status-dot online' : 'status-dot';
+        const localhostUrl = `http://localhost:${svc.port}`;
         
-        if (dot && badge) {
-          if (svc.online) {
-            dot.className = 'status-dot online';
-            badge.className = 'service-badge online';
-            badge.textContent = 'ONLINE';
-          } else {
-            dot.className = 'status-dot';
-            badge.className = 'service-badge';
-            badge.textContent = 'STOPPED';
-          }
+        const latencyHtml = (isOnline && svc.latency_ms !== null && svc.latency_ms !== undefined)
+          ? `<span class="service-latency-pill">${svc.latency_ms}ms</span>`
+          : ``;
+
+        const toggleBtnText = isOnline ? 'Stop' : 'Start';
+        const toggleBtnClass = isOnline ? 'service-toggle-btn running' : 'service-toggle-btn';
+
+        return `
+          <div class="service-row" data-url="${localhostUrl}" data-online="${isOnline}" title="${svc.name} (${localhostUrl}) — ${isOnline ? 'Click to open in browser' : 'Offline'}">
+            <div class="service-left">
+              <div class="service-dot-wrapper">
+                <span class="${dotClass}"></span>
+              </div>
+              <div class="service-details">
+                <span class="service-name">${svc.name}</span>
+                <span class="service-meta">
+                  <span class="service-port-link">:${svc.port}</span>
+                  <span style="opacity:0.4;">•</span>
+                  <span>${svc.desc || (isOnline ? 'Ready' : 'Inactive')}</span>
+                </span>
+              </div>
+            </div>
+            <div class="service-right">
+              ${latencyHtml}
+              <button class="${toggleBtnClass}" data-svc-key="${key}" title="${isOnline ? 'Stop service' : 'Start service'}">
+                ${toggleBtnText}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach click listeners to rows and toggle buttons
+      this.elements.servicesList.querySelectorAll('.service-row').forEach(row => {
+        // Toggle button click
+        const btn = row.querySelector('.service-toggle-btn');
+        if (btn) {
+          btn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const svcKey = btn.dataset.svcKey;
+            await this.toggleService(svcKey, btn);
+          };
         }
+
+        // Row navigation click
+        row.onclick = (e) => {
+          if (e.target.closest('.service-toggle-btn')) return;
+          const url = row.dataset.url;
+          if (!url) return;
+          const inNewTab = e.ctrlKey || e.metaKey || e.button === 1;
+          if (inNewTab) {
+            if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+              chrome.tabs.create({ url, active: true });
+            } else {
+              window.open(url, '_blank', 'noopener,noreferrer');
+            }
+          } else {
+            window.location.href = url;
+          }
+        };
+      });
+    }
+  }
+
+  async toggleService(svcKey, btn) {
+    if (!svcKey || !btn) return;
+    const origText = btn.textContent;
+    btn.textContent = '...';
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('http://127.0.0.1:20250/api/service/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: svcKey })
+      });
+      if (res.ok) {
+        await new Promise(r => setTimeout(r, 400));
+        await this.fetchMetrics();
       }
+    } catch (err) {
+      console.warn('Service toggle error:', err);
+    } finally {
+      btn.classList.remove('loading');
     }
   }
 }
