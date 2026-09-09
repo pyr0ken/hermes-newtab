@@ -30,15 +30,12 @@
         </div>
 
         <div class="hero-meta-right">
-          <div class="weather-pill" id="weather-pill" title="Click to refresh weather">
+          <div class="weather-pill" id="weather-pill" title="Click for 7-day forecast & change city">
             <span class="weather-icon" id="weather-icon"></span>
             <span id="weather-temp">--°C</span>
-            <span class="weather-city" id="weather-city">Tehran</span>
+            <span class="weather-city" id="weather-city">Karaj</span>
           </div>
 
-          <button class="icon-btn" id="btn-reload" title="Refresh Telemetry & Bookmarks">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          </button>
           <button class="icon-btn" id="btn-settings" title="Dashboard Settings">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
@@ -200,6 +197,18 @@
           </div>
         </div>
 
+        <!-- Live Crypto & Market Ticker Card -->
+        <div class="glass-panel market-card">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            <span>Market Ticker</span>
+          </div>
+
+          <div class="market-grid" id="crypto-grid">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
         <!-- Local Developer Services Card -->
         <div class="glass-panel monitor-card">
           <div class="section-title">
@@ -288,9 +297,58 @@
 
   </div>
 
+  <!-- Weekly Weather & City Modal -->
+  <div class="modal-backdrop" id="weather-modal">
+    <div class="glass-panel weather-modal-content">
+      <div class="modal-header">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <span>Weather & 7-Day Forecast</span>
+        </div>
+        <button class="icon-btn modal-close-btn" id="btn-close-weather" title="Close (Esc)">&times;</button>
+      </div>
+
+      <!-- City Search Input & Autocomplete -->
+      <div class="city-search-container">
+        <input 
+          type="text" 
+          id="city-search-input" 
+          class="search-input city-input-field" 
+          placeholder="Search city (e.g. Karaj, Tehran, London, Tokyo)..." 
+          autocomplete="off" 
+        />
+        <div class="city-suggestions-dropdown" id="city-suggestions"></div>
+      </div>
+
+      <!-- Quick Preset Cities -->
+      <div class="quick-city-pills">
+        <span class="quick-city-pill" data-city="Karaj" data-lat="35.8327" data-lon="50.9915">Karaj</span>
+        <span class="quick-city-pill" data-city="Tehran" data-lat="35.6892" data-lon="51.3890">Tehran</span>
+        <span class="quick-city-pill" data-city="Isfahan" data-lat="32.6546" data-lon="51.6680">Isfahan</span>
+        <span class="quick-city-pill" data-city="Shiraz" data-lat="29.5918" data-lon="52.5837">Shiraz</span>
+        <span class="quick-city-pill" data-city="Tabriz" data-lat="38.0800" data-lon="46.2919">Tabriz</span>
+        <span class="quick-city-pill" data-city="Mashhad" data-lat="36.2972" data-lon="59.6067">Mashhad</span>
+      </div>
+
+      <!-- Current Overview in Modal -->
+      <div class="weather-current-banner" id="weather-current-banner">
+        <!-- Populated via JS -->
+      </div>
+
+      <!-- 7-Day Forecast Grid -->
+      <div class="weekly-forecast-box">
+        <div class="section-title" style="font-size: 0.72rem; margin-bottom: 0.6rem;">7-Day Forecast & Precipitation</div>
+        <div class="weekly-forecast-grid" id="weekly-forecast-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/icons.js"></script>
   <script src="js/weather.js"></script>
+  <script src="js/crypto-ticker.js"></script>
   <script src="js/bookmarks.js"></script>
   <script src="js/command-palette.js"></script>
   <script src="js/system-monitor.js"></script>

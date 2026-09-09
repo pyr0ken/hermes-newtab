@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { await window.weatherEngine.init(); } catch (e) { console.warn('Weather init:', e); }
   }
 
+  if (window.cryptoTicker) {
+    try { await window.cryptoTicker.init(); } catch (e) { console.warn('CryptoTicker init:', e); }
+  }
+
   if (window.bookmarksEngine) {
     try { await window.bookmarksEngine.init(); } catch (e) { console.warn('Bookmarks init:', e); }
   }
@@ -39,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       reloadBtn.style.transition = 'transform 500ms ease';
       
       if (window.weatherEngine) await window.weatherEngine.fetchWeather();
+      if (window.cryptoTicker) await window.cryptoTicker.fetchPrices();
       if (window.bookmarksEngine) await window.bookmarksEngine.init();
       if (window.systemMonitor) await window.systemMonitor.fetchMetrics();
       

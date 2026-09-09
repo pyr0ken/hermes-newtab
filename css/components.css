@@ -460,6 +460,23 @@
   gap: 0.6rem;
 }
 
+.bookmark-card *,
+.bookmark-list-row *,
+.pinned-card * {
+  pointer-events: none;
+}
+
+.btn-unpin,
+.add-pin-card {
+  pointer-events: auto !important;
+}
+
+.bookmark-favicon,
+.pinned-favicon {
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+}
+
 .pinned-card {
   position: relative;
   display: flex;
@@ -477,19 +494,90 @@
   text-align: center;
   min-width: 0;
   cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: element;
 }
 
-.pinned-card[draggable="true"]:active,
-.bookmark-card[draggable="true"]:active,
-.bookmark-list-row[draggable="true"]:active {
-  cursor: grabbing;
+.bookmark-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  min-width: 0;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: element;
 }
 
-.pinned-card:hover {
-  background: rgba(59, 130, 246, 0.08);
-  border-color: var(--border-card-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
+.bookmark-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  gap: 1rem;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: element;
+}
+
+.is-dragging {
+  opacity: 0.4 !important;
+  transform: scale(0.96) !important;
+  border: 1px dashed var(--accent-blue) !important;
+}
+
+.drag-over {
+  border-color: var(--accent-blue) !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.5) !important;
+  transform: scale(1.04) !important;
+}
+
+.dropzone-active {
+  outline: 2px dashed rgba(59, 130, 246, 0.6) !important;
+  outline-offset: 4px;
+  background: rgba(59, 130, 246, 0.06) !important;
+  border-radius: var(--radius-md);
+}
+
+.tab-drag-over {
+  background: rgba(59, 130, 246, 0.3) !important;
+  border-color: var(--accent-blue) !important;
+  transform: scale(1.06) !important;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6) !important;
+}
+
+.pinned-favicon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pinned-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
 }
 
 .btn-unpin {
@@ -542,45 +630,6 @@
   background: rgba(59, 130, 246, 0.08);
   border-color: var(--accent-blue);
   color: var(--accent-blue-hover);
-}
-
-.is-dragging {
-  opacity: 0.35 !important;
-  transform: scale(0.95) !important;
-  border: 1px dashed var(--accent-blue) !important;
-  pointer-events: none;
-}
-
-.drag-over {
-  border-color: var(--accent-blue) !important;
-  background: rgba(59, 130, 246, 0.18) !important;
-  box-shadow: 0 0 18px rgba(59, 130, 246, 0.5) !important;
-  transform: scale(1.04) !important;
-}
-
-.dropzone-active {
-  outline: 2px dashed rgba(59, 130, 246, 0.6) !important;
-  outline-offset: 4px;
-  background: rgba(59, 130, 246, 0.06) !important;
-  border-radius: var(--radius-md);
-}
-
-.pinned-favicon {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  padding: 2px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.pinned-title {
-  font-size: 0.75rem;
-  font-weight: 500;
-  width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 4px;
 }
 
 /* ============================================================
@@ -917,6 +966,82 @@
   transition: width 400ms ease;
 }
 
+/* Market Ticker Card */
+.market-card {
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.ticker-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem 0.65rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.ticker-item:hover {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: var(--border-card-hover);
+  transform: translateY(-1px);
+}
+
+.ticker-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ticker-symbol {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ticker-badge {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.ticker-badge.positive {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--status-online);
+}
+
+.ticker-badge.negative {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.ticker-price {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.ticker-name {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
 /* Services Watcher */
 .services-list {
   display: flex;
@@ -1022,4 +1147,255 @@
 
 .footer-link:hover {
   color: var(--accent-blue-hover);
+}
+
+/* ============================================================
+   WEATHER MODAL & 7-DAY FORECAST
+   ============================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-smooth);
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.weather-modal-content {
+  width: 100%;
+  max-width: 650px;
+  background: rgba(13, 18, 28, 0.96);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  transform: translateY(10px);
+  transition: transform var(--transition-smooth);
+}
+
+.modal-backdrop.active .weather-modal-content {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-close-btn {
+  font-size: 1.25rem;
+  width: 28px;
+  height: 28px;
+}
+
+/* City Search Box in Modal */
+.city-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.city-input-field {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.city-suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 250;
+  display: none;
+}
+
+.city-suggestions-dropdown.active {
+  display: block;
+}
+
+.city-suggestion-item {
+  padding: 0.5rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition-fast);
+}
+
+.city-suggestion-item:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.quick-city-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.quick-city-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-city-pill:hover,
+.quick-city-pill.active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--border-card-hover);
+  color: var(--text-primary);
+}
+
+/* Current Weather Banner in Modal */
+.weather-current-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.current-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.current-banner-temp {
+  font-family: var(--font-serif);
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.current-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.current-banner-city {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.current-banner-desc {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.current-banner-metrics {
+  display: flex;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* 7-Day Forecast Grid */
+.weekly-forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .weekly-forecast-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.forecast-day-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.35rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.forecast-day-card:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--border-card-hover);
+}
+
+.forecast-day-card.today {
+  border-color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.forecast-day-name {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.forecast-day-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.15rem 0;
+}
+
+.forecast-day-temps {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-primary);
+}
+
+.forecast-min-temp {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.rain-chance-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: 3px;
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
 }
