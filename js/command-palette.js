@@ -9,12 +9,12 @@ class CommandPalette {
     this.selectedIndex = -1;
 
     this.searchEngines = {
-      'g/': { name: 'Google Search', url: 'https://www.google.com/search?q=' },
-      'gh/': { name: 'GitHub Search', url: 'https://github.com/search?q=' },
-      'x/': { name: 'X / Twitter Search', url: 'https://x.com/search?q=' },
-      'p/': { name: 'Perplexity AI', url: 'https://www.perplexity.ai/search?q=' },
-      'yt/': { name: 'YouTube Search', url: 'https://www.youtube.com/results?search_query=' },
-      'w/': { name: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Special:Search?search=' }
+      '/g': { name: 'Google Search', url: 'https://www.google.com/search?q=' },
+      '/gh': { name: 'GitHub Search', url: 'https://github.com/search?q=' },
+      '/x': { name: 'X / Twitter Search', url: 'https://x.com/search?q=' },
+      '/p': { name: 'Perplexity AI', url: 'https://www.perplexity.ai/search?q=' },
+      '/yt': { name: 'YouTube Search', url: 'https://www.youtube.com/results?search_query=' },
+      '/w': { name: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Special:Search?search=' }
     };
   }
 
@@ -22,6 +22,7 @@ class CommandPalette {
     this.setupKeyboardShortcuts();
     this.setupInputListener();
     this.setupQuickTags();
+    setTimeout(() => this.focusSearch(), 50);
   }
 
   setupKeyboardShortcuts() {
@@ -76,6 +77,30 @@ class CommandPalette {
     });
   }
 
+  tryEvaluateMath(expr) {
+    if (!expr) return null;
+    const sanitized = expr
+      .replace(/\^/g, '**')
+      .replace(/×/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/,/g, '')
+      .trim();
+
+    // Check if expression consists only of digits, basic math symbols and parentheses
+    if (!/^[\d\s\+\-\*\/\(\)\.\%]+$/.test(sanitized)) return null;
+    // Must contain at least one operator
+    if (!/[\+\-\*\/]/.test(sanitized)) return null;
+
+    try {
+      const fn = new Function('"use strict"; return (' + sanitized + ');');
+      const val = fn();
+      if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
+        return val;
+      }
+    } catch {}
+    return null;
+  }
+
   onQueryChange(rawQuery) {
     const query = rawQuery.trim();
     if (!query) {
@@ -83,9 +108,47 @@ class CommandPalette {
       return;
     }
 
-    // Check for prefix shortcuts (e.g. g/ search term)
+    // Check for math calculator expression (e.g. 256 * 1024)
+    const mathResult = this.tryEvaluateMath(query);
+    if (mathResult !== null) {
+      const formatted = Number.isInteger(mathResult) 
+        ? mathResult.toLocaleString('en-US') 
+        : mathResult.toLocaleString('en-US', { maximumFractionDigits: 6 });
+      
+      this.results = [{
+        type: 'calculator',
+        title: `= ${formatted}`,
+        url: `Calculated: ${query} (Click or Enter to copy)`,
+        value: String(mathResult),
+        icon: 'calculator'
+      }];
+      this.selectedIndex = 0;
+      this.renderResults();
+      return;
+    }
+
+    // Explicit Bookmarks only filter: /b or /b query
+    if (query.startsWith('/b ') || query === '/b') {
+      const term = query.replace(/^\/b\s*/, '').trim();
+      const matchedBookmarks = window.bookmarksEngine 
+        ? window.bookmarksEngine.searchBookmarks(term) 
+        : [];
+      this.results = matchedBookmarks.map(bm => ({
+        type: 'bookmark',
+        title: bm.title,
+        url: bm.url,
+        domain: bm.domain,
+        category: bm.category,
+        favicon: bm.favicon
+      }));
+      this.selectedIndex = 0;
+      this.renderResults();
+      return;
+    }
+
+    // Check for prefix shortcuts (e.g. /g search term, /gh repo)
     for (const [prefix, engine] of Object.entries(this.searchEngines)) {
-      if (query.startsWith(prefix)) {
+      if (query.startsWith(prefix + ' ') || query === prefix || query.startsWith(prefix)) {
         const term = query.slice(prefix.length).trim();
         this.results = [{
           type: 'engine',
@@ -99,7 +162,7 @@ class CommandPalette {
       }
     }
 
-    // Search inside bookmarks
+    // Search inside bookmarks with intelligent multi-token fuzzy matching
     const matchedBookmarks = window.bookmarksEngine 
       ? window.bookmarksEngine.searchBookmarks(query) 
       : [];
@@ -117,6 +180,7 @@ class CommandPalette {
         title: bm.title,
         url: bm.url,
         domain: bm.domain,
+        category: bm.category,
         favicon: bm.favicon
       })),
       defaultSearch
@@ -136,15 +200,28 @@ class CommandPalette {
 
     this.resultsDropdown.innerHTML = this.results.map((res, idx) => {
       const isSelected = idx === this.selectedIndex ? 'selected' : '';
-      const iconHtml = res.favicon
-        ? `<img src="${res.favicon}" class="search-result-icon" alt="" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2360a5fa\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/></svg>'">`
-        : `<div class="search-result-icon" style="display:flex;align-items:center;justify-content:center;color:var(--accent-blue);">${ICONS.search}</div>`;
+      let iconHtml;
+      
+      if (res.type === 'calculator') {
+        iconHtml = `<div class="search-result-icon" style="display:flex;align-items:center;justify-content:center;color:var(--status-online);">${ICONS.calculator || ICONS.search}</div>`;
+      } else if (res.favicon) {
+        iconHtml = `<img src="${res.favicon}" class="search-result-icon" alt="" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2360a5fa\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/></svg>'">`;
+      } else {
+        iconHtml = `<div class="search-result-icon" style="display:flex;align-items:center;justify-content:center;color:var(--accent-blue);">${ICONS.search}</div>`;
+      }
+
+      const catBadge = res.category 
+        ? `<span style="font-size: 0.65rem; padding: 0.1rem 0.4rem; background: rgba(59, 130, 246, 0.15); border-radius: 4px; color: var(--accent-blue); margin-left: 0.5rem; font-family: var(--font-mono);">${this.escapeHtml(res.category)}</span>` 
+        : '';
 
       return `
         <div class="search-result-item ${isSelected}" data-index="${idx}">
           ${iconHtml}
           <div class="search-result-info">
-            <span class="search-result-title">${this.escapeHtml(res.title)}</span>
+            <div style="display: flex; align-items: center;">
+              <span class="search-result-title">${this.escapeHtml(res.title)}</span>
+              ${catBadge}
+            </div>
             <span class="search-result-url">${this.escapeHtml(res.url)}</span>
           </div>
         </div>
@@ -227,7 +304,24 @@ class CommandPalette {
 
   navigateToResult(index) {
     const item = this.results[index];
-    if (item && item.url) {
+    if (!item) return;
+
+    if (item.type === 'calculator') {
+      try {
+        navigator.clipboard.writeText(item.value);
+        if (this.searchInput) {
+          this.searchInput.value = item.value;
+          this.searchInput.select();
+        }
+        this.results[index].title = `✓ Copied: ${item.value}`;
+        this.renderResults();
+      } catch (e) {
+        console.warn('Clipboard write failed:', e);
+      }
+      return;
+    }
+
+    if (item.url) {
       window.location.href = item.url;
     }
   }
