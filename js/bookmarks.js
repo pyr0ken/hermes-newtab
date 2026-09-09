@@ -375,10 +375,21 @@ class BookmarksEngine {
     const inNewTab = e.ctrlKey || e.metaKey || e.button === 1;
     if (inNewTab) {
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
-        chrome.tabs.create({ url, active: true });
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
+        try {
+          chrome.tabs.getCurrent((currentTab) => {
+            if (currentTab && typeof currentTab.index === 'number') {
+              chrome.tabs.create({ url, index: currentTab.index + 1, active: true });
+            } else {
+              chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const idx = (tabs && tabs[0] && typeof tabs[0].index === 'number') ? tabs[0].index + 1 : undefined;
+                chrome.tabs.create({ url, index: idx, active: true });
+              });
+            }
+          });
+          return;
+        } catch {}
       }
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = url;
     }

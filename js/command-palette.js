@@ -346,10 +346,21 @@ class CommandPalette {
     if (!targetUrl) return;
     if (openInNewTab) {
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
-        chrome.tabs.create({ url: targetUrl, active: true });
-      } else {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        try {
+          chrome.tabs.getCurrent((currentTab) => {
+            if (currentTab && typeof currentTab.index === 'number') {
+              chrome.tabs.create({ url: targetUrl, index: currentTab.index + 1, active: true });
+            } else {
+              chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const idx = (tabs && tabs[0] && typeof tabs[0].index === 'number') ? tabs[0].index + 1 : undefined;
+                chrome.tabs.create({ url: targetUrl, index: idx, active: true });
+              });
+            }
+          });
+          return;
+        } catch {}
       }
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = targetUrl;
     }

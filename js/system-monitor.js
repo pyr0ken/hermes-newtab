@@ -154,24 +154,35 @@ class SystemMonitor {
           };
         }
 
-        // Row navigation click
+        // Row navigation click (always open in adjacent new tab)
         row.onclick = (e) => {
           if (e.target.closest('.service-toggle-btn')) return;
           const url = row.dataset.url;
           if (!url) return;
-          const inNewTab = e.ctrlKey || e.metaKey || e.button === 1;
-          if (inNewTab) {
-            if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
-              chrome.tabs.create({ url, active: true });
-            } else {
-              window.open(url, '_blank', 'noopener,noreferrer');
-            }
-          } else {
-            window.location.href = url;
-          }
+          this.openAdjacentTab(url, true);
         };
       });
     }
+  }
+
+  openAdjacentTab(url, active = true) {
+    if (!url) return;
+    if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+      try {
+        chrome.tabs.getCurrent((currentTab) => {
+          if (currentTab && typeof currentTab.index === 'number') {
+            chrome.tabs.create({ url, index: currentTab.index + 1, active });
+          } else {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+              const idx = (tabs && tabs[0] && typeof tabs[0].index === 'number') ? tabs[0].index + 1 : undefined;
+              chrome.tabs.create({ url, index: idx, active });
+            });
+          }
+        });
+        return;
+      } catch {}
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   async toggleService(svcKey, btn) {
