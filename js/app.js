@@ -12,23 +12,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 3. Initialize all sub-modules
   if (window.weatherEngine) {
-    await window.weatherEngine.init();
+    try { await window.weatherEngine.init(); } catch (e) { console.warn('Weather init:', e); }
   }
 
   if (window.bookmarksEngine) {
-    await window.bookmarksEngine.init();
+    try { await window.bookmarksEngine.init(); } catch (e) { console.warn('Bookmarks init:', e); }
   }
 
   if (window.commandPalette) {
-    window.commandPalette.init();
+    try { window.commandPalette.init(); } catch (e) { console.warn('CommandPalette init:', e); }
   }
 
   if (window.systemMonitor) {
-    window.systemMonitor.init();
+    try { window.systemMonitor.init(); } catch (e) { console.warn('SystemMonitor init:', e); }
   }
 
   if (window.scratchpad) {
-    await window.scratchpad.init();
+    try { await window.scratchpad.init(); } catch (e) { console.warn('Scratchpad init:', e); }
   }
 
   // 4. Global Action Buttons
