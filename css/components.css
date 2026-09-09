@@ -548,13 +548,21 @@
   opacity: 0.35 !important;
   transform: scale(0.95) !important;
   border: 1px dashed var(--accent-blue) !important;
+  pointer-events: none;
 }
 
 .drag-over {
   border-color: var(--accent-blue) !important;
-  background: rgba(59, 130, 246, 0.15) !important;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4) !important;
-  transform: scale(1.03) !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.5) !important;
+  transform: scale(1.04) !important;
+}
+
+.dropzone-active {
+  outline: 2px dashed rgba(59, 130, 246, 0.6) !important;
+  outline-offset: 4px;
+  background: rgba(59, 130, 246, 0.06) !important;
+  border-radius: var(--radius-md);
 }
 
 .pinned-favicon {

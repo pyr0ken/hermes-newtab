@@ -5,9 +5,13 @@ class BookmarksEngine {
     this.bookmarks = [];
     this.pinnedBookmarks = [];
     this.folders = new Map(); // folderName -> [bookmarks]
-    this.currentFolder = 'all';
+    this.currentFolder = localStorage.getItem('hermes_last_folder') || 'all';
     this.viewMode = localStorage.getItem('hermes_bookmark_view') || 'grid'; // 'grid' | 'list'
 
+    this.refreshElements();
+  }
+
+  refreshElements() {
     this.pinnedGridEl = document.getElementById('pinned-grid');
     this.gridElement = document.getElementById('bookmarks-grid');
     this.tabsElement = document.getElementById('category-tabs');
@@ -21,6 +25,7 @@ class BookmarksEngine {
   }
 
   async init() {
+    this.refreshElements();
     await this.loadBookmarks();
     await this.loadPinnedSites();
     this.renderCategoryTabs();
@@ -35,16 +40,16 @@ class BookmarksEngine {
 
     if (typeof chrome !== 'undefined' && chrome.bookmarks && chrome.bookmarks.getTree) {
       try {
-        const tree = await chrome.bookmarks.getTree();
-        this.parseBookmarkTree(tree);
-        
-        // If folders exist, select the first rich folder by default instead of 'all'
-        const folderKeys = Array.from(this.folders.keys());
-        if (folderKeys.length > 0 && this.currentFolder === 'all') {
-          // Find first folder with > 0 items
-          this.currentFolder = folderKeys[0];
+        const tree = await new Promise((resolve) => {
+          chrome.bookmarks.getTree((res) => resolve(res));
+        });
+        if (tree && Array.isArray(tree) && tree.length > 0) {
+          this.parseBookmarkTree(tree);
+          if (this.currentFolder !== 'all' && !this.folders.has(this.currentFolder)) {
+            this.currentFolder = 'all';
+          }
+          return;
         }
-        return;
       } catch (err) {
         console.warn('Failed to load chrome.bookmarks:', err);
       }
@@ -55,10 +60,12 @@ class BookmarksEngine {
   }
 
   parseBookmarkTree(nodes, currentCategory = 'General') {
+    if (!nodes || !Array.isArray(nodes)) return;
+
     for (const node of nodes) {
       if (node.url) {
         const item = {
-          id: node.id,
+          id: node.id || String(Math.random()),
           title: (node.title || '').trim() || 'Untitled',
           url: node.url,
           category: currentCategory,
@@ -74,11 +81,44 @@ class BookmarksEngine {
       }
 
       if (node.children && node.children.length > 0) {
-        const catName = (node.title && !['Bookmarks bar', 'Other bookmarks', 'Mobile bookmarks'].includes(node.title))
+        const isRootIgnored = ['Bookmarks bar', 'Other bookmarks', 'Mobile bookmarks', 'نوار نشانکها', 'سایر نشانکها', 'نشانکهای تلفن همراه'].includes(node.title);
+        const catName = (node.title && !isRootIgnored)
           ? node.title 
           : currentCategory;
         this.parseBookmarkTree(node.children, catName);
       }
+    }
+  }
+
+  loadFallbackBookmarks() {
+    const defaults = [
+      { title: 'ChatGPT', url: 'https://chatgpt.com', category: 'Chatbots' },
+      { title: 'Claude AI', url: 'https://claude.ai', category: 'Chatbots' },
+      { title: 'Perplexity AI', url: 'https://perplexity.ai', category: 'Chatbots' },
+      { title: 'DeepSeek', url: 'https://chat.deepseek.com', category: 'Chatbots' },
+      { title: 'GitHub', url: 'https://github.com', category: 'Dev' },
+      { title: 'Hermes Agent Docs', url: 'https://hermes-agent.nousresearch.com/docs', category: 'Dev' },
+      { title: 'Arch Linux Wiki', url: 'https://wiki.archlinux.org', category: 'Dev' },
+      { title: 'Hugging Face', url: 'https://huggingface.co', category: 'Google AI' },
+      { title: 'arXiv AI/CS', url: 'https://arxiv.org', category: 'Courses & Data' },
+      { title: 'Figma', url: 'https://figma.com', category: 'Image & Creative' }
+    ];
+
+    for (const d of defaults) {
+      const item = {
+        id: String(Math.random()),
+        title: d.title,
+        url: d.url,
+        category: d.category,
+        domain: this.extractDomain(d.url),
+        favicon: this.getFaviconUrl(d.url)
+      };
+      this.bookmarks.push(item);
+
+      if (!this.folders.has(d.category)) {
+        this.folders.set(d.category, []);
+      }
+      this.folders.get(d.category).push(item);
     }
   }
 
@@ -102,7 +142,7 @@ class BookmarksEngine {
     if (typeof chrome !== 'undefined' && chrome.topSites && chrome.topSites.get) {
       try {
         const topSites = await new Promise(resolve => chrome.topSites.get(resolve));
-        if (topSites && topSites.length > 0) {
+        if (topSites && Array.isArray(topSites) && topSites.length > 0) {
           this.pinnedBookmarks = topSites.slice(0, 10).map(s => ({
             title: s.title || this.extractDomain(s.url),
             url: s.url,
@@ -152,7 +192,28 @@ class BookmarksEngine {
     } catch {}
   }
 
+  extractDomain(url) {
+    try {
+      const u = new URL(url);
+      return u.hostname.replace(/^www\./, '');
+    } catch {
+      return url || '';
+    }
+  }
+
+  getFaviconUrl(pageUrl) {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+        return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(pageUrl)}&size=32`;
+      }
+    } catch {}
+
+    const domain = this.extractDomain(pageUrl);
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+  }
+
   renderPinnedGrid() {
+    this.refreshElements();
     if (!this.pinnedGridEl) return;
 
     const cardsHtml = this.pinnedBookmarks.map((bm, idx) => `
@@ -186,6 +247,7 @@ class BookmarksEngine {
   }
 
   renderCategoryTabs() {
+    this.refreshElements();
     if (!this.tabsElement) return;
 
     const categories = ['all', ...Array.from(this.folders.keys())];
@@ -201,9 +263,18 @@ class BookmarksEngine {
         </button>
       `;
     }).join('');
+
+    // Scroll active tab into view
+    const activeBtn = this.tabsElement.querySelector('.category-tab.active');
+    if (activeBtn) {
+      setTimeout(() => {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 50);
+    }
   }
 
   renderFolderView() {
+    this.refreshElements();
     if (!this.gridElement) return;
 
     const items = this.currentFolder === 'all' 
@@ -217,7 +288,7 @@ class BookmarksEngine {
 
     if (items.length === 0) {
       this.gridElement.innerHTML = `
-        <div style="padding: 2.5rem; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.82rem;">
+        <div style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.82rem;">
           No bookmarks found in this category.
         </div>
       `;
@@ -283,155 +354,221 @@ class BookmarksEngine {
   }
 
   setupPinnedEvents() {
-    // Unpin button clicks
-    if (this.pinnedGridEl) {
-      this.pinnedGridEl.querySelectorAll('.btn-unpin').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    this.refreshElements();
+    if (!this.pinnedGridEl) return;
+
+    // Prevent default click while dragging
+    this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (this.isDraggingBookmark) {
           e.preventDefault();
           e.stopPropagation();
-          const idx = parseInt(btn.dataset.unpinIndex, 10);
-          if (!isNaN(idx) && idx >= 0 && idx < this.pinnedBookmarks.length) {
-            this.pinnedBookmarks.splice(idx, 1);
+          return false;
+        }
+      });
+    });
+
+    // Unpin button clicks
+    this.pinnedGridEl.querySelectorAll('.btn-unpin').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.unpinIndex, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < this.pinnedBookmarks.length) {
+          this.pinnedBookmarks.splice(idx, 1);
+          this.savePinnedSites();
+          this.renderPinnedGrid();
+        }
+      };
+    });
+
+    // Add (+) button click
+    const addBtn = document.getElementById('btn-add-pin');
+    if (addBtn) {
+      addBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const rawUrl = prompt('Enter Website URL (e.g. https://github.com):');
+        if (!rawUrl) return;
+        const formattedUrl = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : 'https://' + rawUrl.trim();
+        const domain = this.extractDomain(formattedUrl);
+        const rawTitle = prompt('Enter Website Title:', domain) || domain;
+
+        this.pinnedBookmarks.push({
+          title: rawTitle.trim(),
+          url: formattedUrl,
+          domain: domain,
+          favicon: this.getFaviconUrl(formattedUrl)
+        });
+        this.savePinnedSites();
+        this.renderPinnedGrid();
+      };
+    }
+
+    // Drag and drop for pinned cards (reordering & receiving from folder)
+    this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
+      card.ondragstart = (e) => {
+        const idx = parseInt(card.dataset.pinnedIndex, 10);
+        this.isDraggingBookmark = true;
+        card.classList.add('is-dragging');
+        const payload = {
+          type: 'pinned-reorder',
+          sourceIndex: idx,
+          data: this.pinnedBookmarks[idx]
+        };
+        window._draggedBookmark = payload;
+        e.dataTransfer.effectAllowed = 'move';
+        try {
+          e.dataTransfer.setData('application/json', JSON.stringify(payload));
+          e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+        } catch {}
+      };
+
+      card.ondragend = () => {
+        card.classList.remove('is-dragging');
+        document.querySelectorAll('.drag-over, .dropzone-active').forEach(el => el.classList.remove('drag-over', 'dropzone-active'));
+        setTimeout(() => {
+          this.isDraggingBookmark = false;
+          window._draggedBookmark = null;
+        }, 200);
+      };
+
+      card.ondragover = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      };
+
+      card.ondragleave = () => {
+        card.classList.remove('drag-over');
+      };
+
+      card.ondrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.remove('drag-over');
+
+        const targetIndex = parseInt(card.dataset.pinnedIndex, 10);
+        let payload = window._draggedBookmark;
+        if (!payload) {
+          try {
+            const raw = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
+            if (raw) payload = JSON.parse(raw);
+          } catch {}
+        }
+
+        if (!payload) return;
+
+        if (payload.type === 'pinned-reorder') {
+          const sourceIndex = payload.sourceIndex;
+          if (sourceIndex !== targetIndex && sourceIndex >= 0 && sourceIndex < this.pinnedBookmarks.length) {
+            const [moved] = this.pinnedBookmarks.splice(sourceIndex, 1);
+            this.pinnedBookmarks.splice(targetIndex, 0, moved);
             this.savePinnedSites();
             this.renderPinnedGrid();
           }
-        });
-      });
+        } else if (payload.type === 'folder-bookmark') {
+          const item = payload.data;
+          if (item && item.url) {
+            const existingIdx = this.pinnedBookmarks.findIndex(b => b.url === item.url);
+            if (existingIdx >= 0) {
+              const [moved] = this.pinnedBookmarks.splice(existingIdx, 1);
+              this.pinnedBookmarks.splice(targetIndex, 0, moved);
+            } else {
+              this.pinnedBookmarks.splice(targetIndex, 0, item);
+            }
+            this.savePinnedSites();
+            this.renderPinnedGrid();
+          }
+        }
+      };
+    });
 
-      // Add (+) button click
-      const addBtn = document.getElementById('btn-add-pin');
-      if (addBtn) {
-        addBtn.addEventListener('click', () => {
-          const rawUrl = prompt('Enter Website URL (e.g. https://github.com):');
-          if (!rawUrl) return;
-          const formattedUrl = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : 'https://' + rawUrl.trim();
-          const domain = this.extractDomain(formattedUrl);
-          const rawTitle = prompt('Enter Website Title:', domain) || domain;
+    // General pinned grid drop zone
+    this.pinnedGridEl.ondragover = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      this.pinnedGridEl.classList.add('dropzone-active');
+    };
 
-          this.pinnedBookmarks.push({
-            title: rawTitle.trim(),
-            url: formattedUrl,
-            domain: domain,
-            favicon: this.getFaviconUrl(formattedUrl)
-          });
-          this.savePinnedSites();
-          this.renderPinnedGrid();
-        });
+    this.pinnedGridEl.ondragleave = (e) => {
+      if (!this.pinnedGridEl.contains(e.relatedTarget)) {
+        this.pinnedGridEl.classList.remove('dropzone-active');
+      }
+    };
+
+    this.pinnedGridEl.ondrop = (e) => {
+      if (e.target.closest('.pinned-card')) return;
+      e.preventDefault();
+      this.pinnedGridEl.classList.remove('dropzone-active');
+
+      let payload = window._draggedBookmark;
+      if (!payload) {
+        try {
+          const raw = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
+          if (raw) payload = JSON.parse(raw);
+        } catch {}
       }
 
-      // Drag and drop for pinned cards (reordering & receiving from folder)
-      this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
-        card.addEventListener('dragstart', (e) => {
-          const idx = parseInt(card.dataset.pinnedIndex, 10);
-          card.classList.add('is-dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('application/json', JSON.stringify({
-            type: 'pinned-reorder',
-            sourceIndex: idx,
-            data: this.pinnedBookmarks[idx]
-          }));
-        });
-
-        card.addEventListener('dragend', () => {
-          card.classList.remove('is-dragging');
-          document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-        });
-
-        card.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          card.classList.add('drag-over');
-        });
-
-        card.addEventListener('dragleave', () => {
-          card.classList.remove('drag-over');
-        });
-
-        card.addEventListener('drop', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          card.classList.remove('drag-over');
-
-          const targetIndex = parseInt(card.dataset.pinnedIndex, 10);
-          try {
-            const payload = JSON.parse(e.dataTransfer.getData('application/json'));
-            if (payload.type === 'pinned-reorder') {
-              const sourceIndex = payload.sourceIndex;
-              if (sourceIndex !== targetIndex) {
-                const [moved] = this.pinnedBookmarks.splice(sourceIndex, 1);
-                this.pinnedBookmarks.splice(targetIndex, 0, moved);
-                this.savePinnedSites();
-                this.renderPinnedGrid();
-              }
-            } else if (payload.type === 'folder-bookmark') {
-              const item = payload.data;
-              // If already exists in pinned, move it
-              const existingIdx = this.pinnedBookmarks.findIndex(b => b.url === item.url);
-              if (existingIdx >= 0) {
-                const [moved] = this.pinnedBookmarks.splice(existingIdx, 1);
-                this.pinnedBookmarks.splice(targetIndex, 0, moved);
-              } else {
-                this.pinnedBookmarks.splice(targetIndex, 0, item);
-              }
-              this.savePinnedSites();
-              this.renderPinnedGrid();
-            }
-          } catch (err) {
-            console.warn('Drop failed:', err);
-          }
-        });
-      });
-
-      // Allow dropping into the general pinned grid area (appends to end)
-      this.pinnedGridEl.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-      });
-
-      this.pinnedGridEl.addEventListener('drop', (e) => {
-        if (e.target.closest('.pinned-card')) return; // Handled by individual card
-        e.preventDefault();
-        try {
-          const payload = JSON.parse(e.dataTransfer.getData('application/json'));
-          if (payload.type === 'folder-bookmark') {
-            const item = payload.data;
-            if (!this.pinnedBookmarks.some(b => b.url === item.url)) {
-              this.pinnedBookmarks.push(item);
-              this.savePinnedSites();
-              this.renderPinnedGrid();
-            }
-          }
-        } catch {}
-      });
-    }
+      if (payload && payload.type === 'folder-bookmark') {
+        const item = payload.data;
+        if (item && item.url && !this.pinnedBookmarks.some(b => b.url === item.url)) {
+          this.pinnedBookmarks.push(item);
+          this.savePinnedSites();
+          this.renderPinnedGrid();
+        }
+      }
+    };
   }
 
   setupFolderDragEvents() {
+    this.refreshElements();
     if (!this.gridElement) return;
 
     this.gridElement.querySelectorAll('.bookmark-card, .bookmark-list-row').forEach(el => {
-      el.addEventListener('dragstart', (e) => {
-        el.classList.add('is-dragging');
-        e.dataTransfer.effectAllowed = 'copyMove';
-        e.dataTransfer.setData('application/json', JSON.stringify({
-          type: 'folder-bookmark',
-          data: {
-            title: el.dataset.bmTitle || 'Bookmark',
-            url: el.dataset.bmUrl,
-            domain: el.dataset.bmDomain || this.extractDomain(el.dataset.bmUrl),
-            favicon: el.dataset.bmFavicon || this.getFaviconUrl(el.dataset.bmUrl)
-          }
-        }));
+      el.addEventListener('click', (e) => {
+        if (this.isDraggingBookmark) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
       });
 
-      el.addEventListener('dragend', () => {
+      el.ondragstart = (e) => {
+        this.isDraggingBookmark = true;
+        el.classList.add('is-dragging');
+        const itemData = {
+          title: el.dataset.bmTitle || 'Bookmark',
+          url: el.dataset.bmUrl,
+          domain: el.dataset.bmDomain || this.extractDomain(el.dataset.bmUrl),
+          favicon: el.dataset.bmFavicon || this.getFaviconUrl(el.dataset.bmUrl)
+        };
+        const payload = {
+          type: 'folder-bookmark',
+          data: itemData
+        };
+        window._draggedBookmark = payload;
+        e.dataTransfer.effectAllowed = 'copy';
+        try {
+          e.dataTransfer.setData('application/json', JSON.stringify(payload));
+          e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+        } catch {}
+      };
+
+      el.ondragend = () => {
         el.classList.remove('is-dragging');
-        document.querySelectorAll('.drag-over').forEach(item => item.classList.remove('drag-over'));
-      });
+        document.querySelectorAll('.drag-over, .dropzone-active').forEach(item => item.classList.remove('drag-over', 'dropzone-active'));
+        setTimeout(() => {
+          this.isDraggingBookmark = false;
+          window._draggedBookmark = null;
+        }, 200);
+      };
     });
   }
 
   updateViewModeButtons() {
+    this.refreshElements();
     if (this.btnViewGrid && this.btnViewList) {
       if (this.viewMode === 'grid') {
         this.btnViewGrid.classList.add('active');
@@ -444,53 +581,53 @@ class BookmarksEngine {
   }
 
   setupEventListeners() {
-    // Tab switching
+    this.refreshElements();
+
+    // Category Tabs Switching
     if (this.tabsElement) {
-      this.tabsElement.addEventListener('click', (e) => {
+      this.tabsElement.onclick = (e) => {
         const btn = e.target.closest('.category-tab');
         if (!btn) return;
 
         this.currentFolder = btn.dataset.folder;
+        localStorage.setItem('hermes_last_folder', this.currentFolder);
         this.tabsElement.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
-        // Scroll active tab into view in the carousel
         btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
         this.renderFolderView();
-      });
+      };
     }
 
-    // Carousel buttons
+    // Carousel Buttons
     if (this.carouselPrev && this.tabsElement) {
-      this.carouselPrev.addEventListener('click', () => {
+      this.carouselPrev.onclick = () => {
         this.tabsElement.scrollBy({ left: -240, behavior: 'smooth' });
-      });
+      };
     }
 
     if (this.carouselNext && this.tabsElement) {
-      this.carouselNext.addEventListener('click', () => {
+      this.carouselNext.onclick = () => {
         this.tabsElement.scrollBy({ left: 240, behavior: 'smooth' });
-      });
+      };
     }
 
-    // View toggles
+    // View Toggles
     if (this.btnViewGrid) {
-      this.btnViewGrid.addEventListener('click', () => {
+      this.btnViewGrid.onclick = () => {
         this.viewMode = 'grid';
         localStorage.setItem('hermes_bookmark_view', 'grid');
         this.updateViewModeButtons();
         this.renderFolderView();
-      });
+      };
     }
 
     if (this.btnViewList) {
-      this.btnViewList.addEventListener('click', () => {
+      this.btnViewList.onclick = () => {
         this.viewMode = 'list';
         localStorage.setItem('hermes_bookmark_view', 'list');
         this.updateViewModeButtons();
         this.renderFolderView();
-      });
+      };
     }
   }
 
