@@ -58,7 +58,7 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background: 
     radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 100% 100%, rgba(29, 78, 216, 0.04) 0%, transparent 40%),
@@ -69,7 +69,7 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background-image: 
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
@@ -80,14 +80,13 @@ body {
 /* Engraving Vector Watermark */
 .hermes-watermark {
   position: fixed;
-  right: -5%;
-  bottom: -5%;
-  width: 550px;
-  height: 550px;
-  opacity: 0.035;
+  right: -2%;
+  bottom: -2%;
+  width: 480px;
+  height: 480px;
+  opacity: 0.025;
   pointer-events: none;
-  z-index: 0;
-  filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3));
+  z-index: -1;
 }
 
 /* Glassmorphic Container / Card */
