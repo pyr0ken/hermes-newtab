@@ -44,6 +44,14 @@ WATCHED_SERVICES = {
         "desc": "Portal Client API",
         "workdir": "/home/omid/Code/fun/golestan-automation",
         "start_cmd": "/home/omid/Code/fun/golestan-automation/.venv/bin/python main.py serve --port 7667"
+    },
+    "ayh": {
+        "name": "AYH Fullstack",
+        "port": 8001,
+        "ports": [8001, 3001],
+        "desc": "DRF :8001 • Admin :3001",
+        "workdir": "/home/omid/Code/work/AYH01",
+        "start_cmd": "/home/omid/Code/work/AYH01/venv/bin/python manage.py runserver 8001 & (cd /home/omid/Code/work/AYH01/admin_panel && npm run dev -- -p 3001)"
     }
 }
 
@@ -172,12 +180,14 @@ class ServiceManager:
         if systemd_svc:
             subprocess.run(["systemctl", "--user", "stop", systemd_svc], check=False)
 
-        # Terminate by port
+        # Terminate by port(s)
         port = info["port"]
-        try:
-            subprocess.run(["fuser", "-k", f"{port}/tcp"], capture_output=True, check=False)
-        except Exception:
-            pass
+        ports = info.get("ports", [port])
+        for p in ports:
+            try:
+                subprocess.run(["fuser", "-k", f"{p}/tcp"], capture_output=True, check=False)
+            except Exception:
+                pass
 
         time.sleep(0.3)
         is_still_alive, _ = SystemMetrics.check_service_port(port)

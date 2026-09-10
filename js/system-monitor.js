@@ -24,6 +24,7 @@ class SystemMonitor {
       omniroute: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>`,
       oxiroute: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
       golestan: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`,
+      ayh: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M6.5 9a11.5 11.5 0 0 1 11 0M12 7v7m-4 3 4-3 4 3m-7 4 3-4 3 4"/></svg>`,
       default: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>`
     };
   }
@@ -110,7 +111,7 @@ class SystemMonitor {
       }
     }
 
-    // Services Interactive Control Matrix
+    // Services Interactive 2-Column Grid (Matching Market Ticker)
     if (data.services && this.elements.servicesList) {
       // Sort online/running services first, then by name
       const sortedServices = Object.entries(data.services).sort((a, b) => {
@@ -121,47 +122,45 @@ class SystemMonitor {
 
       this.elements.servicesList.innerHTML = sortedServices.map(([key, svc]) => {
         const isOnline = svc.online;
-        const dotClass = isOnline ? 'status-dot online' : 'status-dot';
         const localhostUrl = `http://localhost:${svc.port}`;
         const iconSvg = this.serviceIcons[key] || this.serviceIcons.default;
         
-        const latencyHtml = (isOnline && svc.latency_ms !== null && svc.latency_ms !== undefined)
-          ? `<span class="service-latency-pill">${svc.latency_ms}ms</span>`
-          : ``;
+        const badgeClass = isOnline ? 'online' : 'offline';
+        const badgeText = isOnline 
+          ? (svc.latency_ms !== null && svc.latency_ms !== undefined ? `${svc.latency_ms}ms` : 'ON') 
+          : 'OFF';
 
         const toggleBtnText = isOnline ? 'Stop' : 'Start';
-        const toggleBtnClass = isOnline ? 'service-toggle-btn running' : 'service-toggle-btn';
+        const toggleBtnClass = isOnline ? 'service-tile-btn running' : 'service-tile-btn';
 
         return `
-          <div class="service-row ${isOnline ? 'is-online' : 'is-offline'}" data-url="${localhostUrl}" data-online="${isOnline}" title="${svc.name} (${localhostUrl}) — ${isOnline ? 'Click to open in browser' : 'Offline'}">
-            <div class="service-left">
-              <div class="service-icon-box ${isOnline ? 'online' : ''}">
-                ${iconSvg}
-                <span class="${dotClass}"></span>
+          <div class="service-tile ${isOnline ? 'is-online' : 'is-offline'}" data-url="${localhostUrl}" data-online="${isOnline}" title="${svc.name} (${localhostUrl}) — Click to open">
+            <div class="service-tile-top">
+              <div class="service-tile-title-group">
+                <span class="service-tile-icon ${isOnline ? 'online' : ''}">${iconSvg}</span>
+                <span class="service-tile-name font-mono">${svc.name}</span>
               </div>
-              <div class="service-details">
-                <span class="service-name">${svc.name}</span>
-                <span class="service-meta">
-                  <span class="service-port-link font-mono">:${svc.port}</span>
-                  <span style="opacity:0.4;">•</span>
-                  <span>${svc.desc || (isOnline ? 'Ready' : 'Inactive')}</span>
-                </span>
-              </div>
+              <span class="service-tile-badge ${badgeClass} font-mono">${badgeText}</span>
             </div>
-            <div class="service-right">
-              ${latencyHtml}
+
+            <div class="service-tile-middle font-mono">
+              <span class="service-tile-port">:${svc.port}</span>
               <button class="${toggleBtnClass}" data-svc-key="${key}" title="${isOnline ? 'Stop service' : 'Start service'}">
                 ${toggleBtnText}
               </button>
+            </div>
+
+            <div class="service-tile-bottom">
+              <span class="service-tile-desc">${svc.desc || (isOnline ? 'Ready' : 'Inactive')}</span>
             </div>
           </div>
         `;
       }).join('');
 
-      // Attach click listeners to rows and toggle buttons
-      this.elements.servicesList.querySelectorAll('.service-row').forEach(row => {
+      // Attach click listeners to tiles and toggle buttons
+      this.elements.servicesList.querySelectorAll('.service-tile').forEach(tile => {
         // Toggle button click
-        const btn = row.querySelector('.service-toggle-btn');
+        const btn = tile.querySelector('.service-tile-btn');
         if (btn) {
           btn.onclick = async (e) => {
             e.preventDefault();
@@ -171,10 +170,10 @@ class SystemMonitor {
           };
         }
 
-        // Row navigation click (always open in adjacent new tab)
-        row.onclick = (e) => {
-          if (e.target.closest('.service-toggle-btn')) return;
-          const url = row.dataset.url;
+        // Tile navigation click (always open in adjacent new tab)
+        tile.onclick = (e) => {
+          if (e.target.closest('.service-tile-btn')) return;
+          const url = tile.dataset.url;
           if (!url) return;
           this.openAdjacentTab(url, true);
         };
