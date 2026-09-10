@@ -442,63 +442,16 @@
 }
 
 /* ============================================================
-   LAYER 1: PINNED / SPEED DIAL SECTION
+   BOOKMARKS & FOLDER EXPLORER SECTION
    ============================================================ */
-.pinned-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.pinned-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pinned-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-  gap: 0.55rem;
-}
-
 .bookmark-card *,
-.bookmark-list-row *,
-.pinned-card * {
+.bookmark-list-row * {
   pointer-events: none;
 }
 
-.btn-unpin,
-.add-pin-card {
-  pointer-events: auto !important;
-}
-
-.bookmark-favicon,
-.pinned-favicon {
+.bookmark-favicon {
   -webkit-user-drag: none !important;
   user-drag: none !important;
-}
-
-.pinned-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.75rem 0.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  text-align: center;
-  min-width: 0;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-user-drag: element;
 }
 
 .bookmark-card {
@@ -564,81 +517,6 @@
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.6) !important;
 }
 
-.pinned-favicon {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  padding: 2px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.pinned-title {
-  font-size: 0.75rem;
-  font-weight: 500;
-  width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 4px;
-  unicode-bidi: plaintext;
-  text-align: center;
-}
-
-.btn-unpin {
-  position: absolute;
-  top: 4px;
-  right: 5px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: rgba(13, 18, 28, 0.85);
-  border: 1px solid var(--border-card);
-  color: var(--text-muted);
-  font-size: 11px;
-  line-height: 1;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  z-index: 5;
-}
-
-.pinned-card:hover .btn-unpin {
-  display: flex;
-}
-
-.btn-unpin:hover {
-  background: #ef4444;
-  color: #fff;
-  border-color: #ef4444;
-}
-
-.add-pin-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.75rem 0.5rem;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px dashed var(--border-card);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  min-height: 70px;
-}
-
-.add-pin-card:hover {
-  background: rgba(59, 130, 246, 0.08);
-  border-color: var(--accent-blue);
-  color: var(--accent-blue-hover);
-}
-
-/* ============================================================
-   LAYER 2: FOLDER EXPLORER SECTION
-   ============================================================ */
 .explorer-section {
   display: flex;
   flex-direction: column;

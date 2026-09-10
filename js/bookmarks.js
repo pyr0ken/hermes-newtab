@@ -1,9 +1,8 @@
-// Bookmarks & Speed Dial Engine with Full Drag & Drop (Folders + Quick Access)
+// Bookmarks Explorer Engine with Drag & Drop to Folders
 
 class BookmarksEngine {
   constructor() {
     this.bookmarks = [];
-    this.pinnedBookmarks = [];
     this.folders = new Map(); // folderName -> [bookmarks]
     this.folderNodeIds = new Map(); // folderName -> chromeNodeId
     this.currentFolder = localStorage.getItem('hermes_last_folder') || 'all';
@@ -15,8 +14,6 @@ class BookmarksEngine {
   }
 
   refreshElements() {
-    this.pinnedSectionEl = document.querySelector('.pinned-section');
-    this.pinnedGridEl = document.getElementById('pinned-grid');
     this.gridElement = document.getElementById('bookmarks-grid');
     this.tabsElement = document.getElementById('category-tabs');
     this.folderTitleEl = document.getElementById('current-folder-title');
@@ -31,7 +28,6 @@ class BookmarksEngine {
   async init() {
     this.refreshElements();
     await this.loadBookmarks();
-    await this.loadPinnedSites();
     this.renderCategoryTabs();
     this.updateViewModeButtons();
     this.renderFolderView();
@@ -133,77 +129,6 @@ class BookmarksEngine {
     }
   }
 
-  async loadPinnedSites() {
-    this.pinnedBookmarks = [];
-
-    // Check custom saved pins first
-    try {
-      const saved = localStorage.getItem('hermes_custom_pinned');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.pinnedBookmarks = parsed;
-          this.renderPinnedGrid();
-          return;
-        }
-      }
-    } catch {}
-
-    // Option A: Try Chrome topSites API
-    if (typeof chrome !== 'undefined' && chrome.topSites && chrome.topSites.get) {
-      try {
-        const topSites = await new Promise(resolve => chrome.topSites.get(resolve));
-        if (topSites && Array.isArray(topSites) && topSites.length > 0) {
-          this.pinnedBookmarks = topSites.slice(0, 10).map(s => ({
-            id: String(Math.random()),
-            title: s.title || this.extractDomain(s.url),
-            url: s.url,
-            domain: this.extractDomain(s.url),
-            favicon: this.getFaviconUrl(s.url)
-          }));
-          this.savePinnedSites();
-          this.renderPinnedGrid();
-          return;
-        }
-      } catch (e) {
-        console.warn('topSites API unavailable:', e);
-      }
-    }
-
-    // Option B: Fallback to top curated favorites from bookmarks or defaults
-    const topKeywords = ['chatgpt', 'claude', 'github', 'perplexity', 'huggingface', 'youtube', 'x.com', 'obsidian', 'linear', 'figma'];
-    const found = [];
-
-    for (const kw of topKeywords) {
-      const match = this.bookmarks.find(b => b.url.toLowerCase().includes(kw) || b.title.toLowerCase().includes(kw));
-      if (match && !found.some(f => f.url === match.url)) {
-        found.push(match);
-      }
-    }
-
-    if (found.length < 6) {
-      for (const b of this.bookmarks) {
-        if (!found.some(f => f.url === b.url)) {
-          found.push(b);
-          if (found.length >= 8) break;
-        }
-      }
-    }
-
-    this.pinnedBookmarks = found.slice(0, 10);
-    this.savePinnedSites();
-    this.renderPinnedGrid();
-  }
-
-  savePinnedSites() {
-    try {
-      localStorage.setItem('hermes_custom_pinned', JSON.stringify(this.pinnedBookmarks));
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ hermes_custom_pinned: this.pinnedBookmarks });
-      }
-    } catch {}
-  }
-
   extractDomain(url) {
     try {
       const u = new URL(url);
@@ -222,39 +147,6 @@ class BookmarksEngine {
 
     const domain = this.extractDomain(pageUrl);
     return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
-  }
-
-  renderPinnedGrid() {
-    this.refreshElements();
-    if (!this.pinnedGridEl) return;
-
-    const cardsHtml = this.pinnedBookmarks.map((bm, idx) => `
-      <div 
-        class="pinned-card" 
-        title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to reorder" 
-        draggable="true" 
-        data-pinned-index="${idx}"
-        data-url="${bm.url}"
-      >
-        <button class="btn-unpin" title="Remove from Quick Access" data-unpin-index="${idx}">&times;</button>
-        <img 
-          src="${bm.favicon}" 
-          class="pinned-favicon" 
-          alt="${this.escapeHtml(bm.title)}"
-          onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2360a5fa\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/></svg>'" 
-        />
-        <span class="pinned-title">${this.escapeHtml(bm.title)}</span>
-      </div>
-    `).join('');
-
-    const addCardHtml = `
-      <div class="add-pin-card" id="btn-add-pin" title="Add custom link to Quick Access">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </div>
-    `;
-
-    this.pinnedGridEl.innerHTML = cardsHtml + addCardHtml;
-    this.setupPinnedEvents();
   }
 
   renderCategoryTabs() {
@@ -313,7 +205,7 @@ class BookmarksEngine {
       this.gridElement.innerHTML = items.map((bm, idx) => `
         <div 
           class="bookmark-list-row" 
-          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Quick Access or Folders"
+          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Category tabs to organize"
           draggable="true"
           data-bm-index="${idx}"
           data-bm-id="${bm.id}"
@@ -343,7 +235,7 @@ class BookmarksEngine {
       this.gridElement.innerHTML = items.map((bm, idx) => `
         <div 
           class="bookmark-card" 
-          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Quick Access or Folders"
+          title="${this.escapeHtml(bm.title)} (${bm.url}) — Drag to Category tabs to organize"
           draggable="true"
           data-bm-index="${idx}"
           data-bm-id="${bm.id}"
@@ -393,178 +285,6 @@ class BookmarksEngine {
     } else {
       window.location.href = url;
     }
-  }
-
-  setupPinnedEvents() {
-    this.refreshElements();
-    if (!this.pinnedGridEl) return;
-
-    // Card Clicks (Open URL if not dragged)
-    this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
-      card.onclick = (e) => {
-        if (this.isDragging) {
-          e.preventDefault();
-          return;
-        }
-        if (e.target.closest('.btn-unpin')) return;
-        const url = card.dataset.url;
-        this.openBookmarkUrl(url, e);
-      };
-    });
-
-    // Unpin button clicks
-    this.pinnedGridEl.querySelectorAll('.btn-unpin').forEach(btn => {
-      btn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const idx = parseInt(btn.dataset.unpinIndex, 10);
-        if (!isNaN(idx) && idx >= 0 && idx < this.pinnedBookmarks.length) {
-          this.pinnedBookmarks.splice(idx, 1);
-          this.savePinnedSites();
-          this.renderPinnedGrid();
-        }
-      };
-    });
-
-    // Add (+) button click
-    const addBtn = document.getElementById('btn-add-pin');
-    if (addBtn) {
-      addBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const rawUrl = prompt('Enter Website URL (e.g. https://github.com):');
-        if (!rawUrl) return;
-        const formattedUrl = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : 'https://' + rawUrl.trim();
-        const domain = this.extractDomain(formattedUrl);
-        const rawTitle = prompt('Enter Website Title:', domain) || domain;
-
-        this.pinnedBookmarks.push({
-          id: String(Math.random()),
-          title: rawTitle.trim(),
-          url: formattedUrl,
-          domain: domain,
-          favicon: this.getFaviconUrl(formattedUrl)
-        });
-        this.savePinnedSites();
-        this.renderPinnedGrid();
-      };
-    }
-
-    // Drag and drop for pinned cards (reordering & receiving from folder)
-    this.pinnedGridEl.querySelectorAll('.pinned-card').forEach(card => {
-      card.ondragstart = (e) => {
-        const idx = parseInt(card.dataset.pinnedIndex, 10);
-        this.isDragging = true;
-        window._activeDragItem = {
-          type: 'pinned-reorder',
-          sourceIndex: idx,
-          data: this.pinnedBookmarks[idx]
-        };
-        this.activeDragPayload = window._activeDragItem;
-        card.classList.add('is-dragging');
-        e.dataTransfer.effectAllowed = 'copyMove';
-        try {
-          e.dataTransfer.setData('text/plain', JSON.stringify(window._activeDragItem));
-        } catch {}
-      };
-
-      card.ondragend = () => {
-        card.classList.remove('is-dragging');
-        document.querySelectorAll('.drag-over, .dropzone-active, .tab-drag-over').forEach(el => el.classList.remove('drag-over', 'dropzone-active', 'tab-drag-over'));
-        setTimeout(() => {
-          this.isDragging = false;
-          this.activeDragPayload = null;
-          window._activeDragItem = null;
-        }, 150);
-      };
-
-      card.ondragover = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.dataTransfer.dropEffect = 'move';
-        card.classList.add('drag-over');
-      };
-
-      card.ondragleave = () => {
-        card.classList.remove('drag-over');
-      };
-
-      card.ondrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        card.classList.remove('drag-over');
-
-        const targetIndex = parseInt(card.dataset.pinnedIndex, 10);
-        let payload = this.activeDragPayload || window._activeDragItem;
-        if (!payload) {
-          try {
-            const raw = e.dataTransfer.getData('text/plain');
-            if (raw) payload = JSON.parse(raw);
-          } catch {}
-        }
-
-        if (!payload) return;
-
-        if (payload.type === 'pinned-reorder') {
-          const sourceIndex = payload.sourceIndex;
-          if (sourceIndex !== targetIndex && sourceIndex >= 0 && sourceIndex < this.pinnedBookmarks.length) {
-            const [moved] = this.pinnedBookmarks.splice(sourceIndex, 1);
-            this.pinnedBookmarks.splice(targetIndex, 0, moved);
-            this.savePinnedSites();
-            this.renderPinnedGrid();
-          }
-        } else if (payload.type === 'folder-bookmark') {
-          const item = payload.data;
-          if (item && item.url) {
-            const existingIdx = this.pinnedBookmarks.findIndex(b => b.url === item.url);
-            if (existingIdx >= 0) {
-              const [moved] = this.pinnedBookmarks.splice(existingIdx, 1);
-              this.pinnedBookmarks.splice(targetIndex, 0, moved);
-            } else {
-              this.pinnedBookmarks.splice(targetIndex, 0, item);
-            }
-            this.savePinnedSites();
-            this.renderPinnedGrid();
-          }
-        }
-      };
-    });
-
-    // General pinned grid drop zone (appends to end)
-    this.pinnedGridEl.ondragover = (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      this.pinnedGridEl.classList.add('dropzone-active');
-    };
-
-    this.pinnedGridEl.ondragleave = (e) => {
-      if (!this.pinnedGridEl.contains(e.relatedTarget)) {
-        this.pinnedGridEl.classList.remove('dropzone-active');
-      }
-    };
-
-    this.pinnedGridEl.ondrop = (e) => {
-      if (e.target.closest('.pinned-card')) return;
-      e.preventDefault();
-      this.pinnedGridEl.classList.remove('dropzone-active');
-
-      let payload = this.activeDragPayload || window._activeDragItem;
-      if (!payload) {
-        try {
-          const raw = e.dataTransfer.getData('text/plain');
-          if (raw) payload = JSON.parse(raw);
-        } catch {}
-      }
-
-      if (payload && payload.type === 'folder-bookmark') {
-        const item = payload.data;
-        if (item && item.url && !this.pinnedBookmarks.some(b => b.url === item.url)) {
-          this.pinnedBookmarks.push(item);
-          this.savePinnedSites();
-          this.renderPinnedGrid();
-        }
-      }
-    };
   }
 
   setupFolderDragEvents() {
