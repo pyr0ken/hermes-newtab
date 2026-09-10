@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { await window.cryptoTicker.init(); } catch (e) { console.warn('CryptoTicker init:', e); }
   }
 
+  if (window.githubActivity) {
+    try { await window.githubActivity.init(); } catch (e) { console.warn('GitHubActivity init:', e); }
+  }
+
   if (window.bookmarksEngine) {
     try { await window.bookmarksEngine.init(); } catch (e) { console.warn('Bookmarks init:', e); }
   }
@@ -48,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (window.weatherEngine) await window.weatherEngine.fetchWeather();
       if (window.cryptoTicker) await window.cryptoTicker.fetchPrices();
+      if (window.githubActivity) await window.githubActivity.fetchContributions();
       if (window.bookmarksEngine) await window.bookmarksEngine.init();
       if (window.systemMonitor) await window.systemMonitor.fetchMetrics();
       
