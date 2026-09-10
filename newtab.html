@@ -210,10 +210,18 @@
 
             <!-- Month Navigator -->
             <div class="cal-nav-row font-mono">
-              <button class="icon-btn cal-nav-btn" id="cal-prev-month" title="Previous Month">‹</button>
+              <button class="cal-nav-btn cal-prev-btn" id="cal-prev-month" title="Previous Month">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+
               <span class="cal-current-month-title font-mono" id="cal-current-month-title">Shahrivar 1405</span>
-              <button class="icon-btn cal-nav-btn" id="cal-next-month" title="Next Month">›</button>
-              <button class="cal-btn-today font-mono" id="cal-btn-today" title="Jump to Today">Today</button>
+
+              <div class="cal-nav-right-group">
+                <button class="cal-nav-btn cal-next-btn" id="cal-next-month" title="Next Month">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <button class="cal-btn-today font-mono" id="cal-btn-today" title="Jump to Today">Today</button>
+              </div>
             </div>
 
             <!-- Calendar Grid -->

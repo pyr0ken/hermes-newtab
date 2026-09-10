@@ -1188,38 +1188,71 @@
 }
 
 .cal-nav-btn {
-  width: 26px;
-  height: 26px;
-  font-size: 1rem;
+  min-width: 48px;
+  height: 28px;
+  padding: 0 0.85rem;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.cal-nav-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+}
+
+.cal-nav-btn:active {
+  transform: scale(0.96);
+}
+
+.cal-nav-right-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .cal-current-month-title {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
-  min-width: 140px;
+  min-width: 130px;
   text-align: center;
+  flex: 1;
 }
 
 .cal-btn-today {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
+  height: 28px;
+  padding: 0 0.85rem;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border-card);
   color: var(--text-secondary);
   font-size: 0.68rem;
-  padding: 0.25rem 0.6rem;
+  font-weight: 500;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all var(--transition-fast);
+  user-select: none;
 }
 
 .cal-btn-today:hover {
   background: rgba(59, 130, 246, 0.15);
   border-color: var(--accent-blue);
   color: var(--text-primary);
+}
+
+.cal-btn-today:active {
+  transform: scale(0.96);
 }
 
 /* Calendar Grid */
