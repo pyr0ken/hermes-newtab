@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. Start Live Clock & Dual Date
   initClockAndDate();
 
+  if (window.dualCalendar) {
+    try { window.dualCalendar.init(); } catch (e) { console.warn('DualCalendar init:', e); }
+  }
+
   // 3. Initialize all sub-modules
   if (window.weatherEngine) {
     try { await window.weatherEngine.init(); } catch (e) { console.warn('Weather init:', e); }
@@ -116,9 +120,11 @@ function initClockAndDate() {
       clockEl.textContent = `${h}:${m}:${s}`;
     }
 
-    // Gregorian Date
-    if (gregDateEl) {
-      const options = { weekday: 'long', month: 'short', day: '2-digit', year: 'numeric' };
+    // Dual Date (Gregorian & Persian Fingilish)
+    if (window.dualCalendar) {
+      window.dualCalendar.updateDatePills(now);
+    } else if (gregDateEl) {
+      const options = { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' };
       gregDateEl.textContent = now.toLocaleDateString('en-US', options);
     }
   }

@@ -37,8 +37,11 @@
           <span id="live-clock">12:00:00</span>
         </div>
 
-        <div class="top-date-pill font-mono" title="Date">
-          <span id="gregorian-date">Wednesday, Sep 09, 2026</span>
+        <div class="top-date-pill font-mono" id="btn-open-calendar" title="Click to open Dual Calendar (Persian Fingilish & Gregorian)">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <span id="gregorian-date">Thu, 10 Sep 2026</span>
+          <span class="date-dot-divider">•</span>
+          <span id="persian-date" class="persian-date-highlight">Panjshanbeh, 19 Shahrivar 1405</span>
         </div>
 
         <button class="icon-btn" id="btn-settings" title="Dashboard Settings">
@@ -302,9 +305,63 @@
     </div>
   </div>
 
+  <!-- Dual Interactive Calendar Modal (Persian Fingilish & Gregorian) -->
+  <div class="modal-backdrop" id="calendar-modal">
+    <div class="glass-panel calendar-modal-content">
+      <div class="modal-header">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <span>Dual Calendar (Persian Fingilish & Gregorian)</span>
+        </div>
+        <button class="icon-btn modal-close-btn" id="btn-close-calendar" title="Close (Esc)">&times;</button>
+      </div>
+
+      <!-- Today's Dual Highlights -->
+      <div class="cal-today-dual-banner">
+        <div class="cal-overview-card" id="cal-persian-overview">
+          <!-- Populated dynamically via JS -->
+        </div>
+        <div class="cal-overview-card" id="cal-gregorian-overview">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Calendar Control Bar: Switcher + Month Navigator -->
+      <div class="cal-controls-bar">
+        <div class="cal-mode-switcher">
+          <button class="cal-mode-btn active" id="cal-toggle-jalali">Persian (Fingilish)</button>
+          <button class="cal-mode-btn" id="cal-toggle-gregorian">Gregorian</button>
+        </div>
+
+        <div class="cal-month-nav">
+          <button class="icon-btn cal-nav-btn" id="cal-prev-month" title="Previous Month">‹</button>
+          <span class="cal-current-month-title font-mono" id="cal-current-month-title">Shahrivar 1405</span>
+          <button class="icon-btn cal-nav-btn" id="cal-next-month" title="Next Month">›</button>
+          <button class="cal-btn-today font-mono" id="cal-btn-today" title="Jump to Today">Today</button>
+        </div>
+      </div>
+
+      <!-- Calendar Month Grid Box -->
+      <div class="cal-month-grid-wrapper">
+        <div class="cal-weekday-headers font-mono" id="cal-weekday-headers">
+          <!-- Populated dynamically via JS -->
+        </div>
+        <div class="cal-days-grid" id="cal-days-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Inspector / Conversion Bar -->
+      <div class="cal-selected-inspector font-mono" id="cal-selected-inspector">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/icons.js"></script>
   <script src="js/weather.js"></script>
+  <script src="js/calendar.js"></script>
   <script src="js/crypto-ticker.js"></script>
   <script src="js/bookmarks.js"></script>
   <script src="js/command-palette.js"></script>
