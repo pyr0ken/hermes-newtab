@@ -11,56 +11,87 @@
   <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
-  <!-- Ambient Atmosphere & Watermark -->
+  <!-- Ambient Atmosphere & High-Res Background Art -->
   <div class="bg-atmosphere"></div>
   <div class="bg-grid-overlay"></div>
-  <img src="assets/hermes-hero-art.svg" class="hermes-watermark" alt="Hermes Art" />
+  <div class="hermes-bg-hero-container">
+    <img src="assets/hermes-hero-art.png" class="hermes-bg-hero-img" alt="Hermes Cybernetic Art" />
+  </div>
 
   <div class="app-container">
     
-    <!-- Spotlight Hero Centerpiece -->
+    <!-- Spotlight Hero Centerpiece with Symmetrical Artwork Wings -->
     <section class="spotlight-hero glass-panel">
-      <div class="spotlight-greeting-box">
-        <div class="greeting-title font-serif">
-          <span id="greeting-text">Good evening</span>, <span class="username-highlight">pyr0ken</span> <span class="sparkle-glyph">✦</span>
+      
+      <!-- Left Artwork Wing -->
+      <a href="https://hermes-agent.nousresearch.com/" target="_blank" class="hero-wing hero-wing-left" title="Nous Hermes Agent Platform">
+        <div class="hero-wing-art-box">
+          <img src="assets/platform-linux.png" alt="Hermes Agent Core" class="hero-wing-img" />
+          <div class="hero-wing-glow"></div>
         </div>
-        <div class="greeting-quote font-mono" id="daily-quote" title="Click to cycle thoughts">
-          "Build systems that grow with you."
+        <div class="hero-wing-meta">
+          <span class="hero-wing-badge font-mono">HERMES AGENT</span>
+          <span class="hero-wing-label font-mono">ARCH // LINUX</span>
         </div>
-      </div>
+      </a>
 
-      <!-- Spotlight Command Bar -->
-      <div class="spotlight-search-container">
-        <div class="spotlight-search-box">
-          <div class="search-engine-selector" title="Search Scope">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span class="engine-name">All</span>
+      <!-- Center Hero Column -->
+      <div class="hero-center-column">
+        <div class="spotlight-greeting-box">
+          <div class="greeting-title font-serif">
+            <span id="greeting-text">Good evening</span>, <span class="username-highlight">pyr0ken</span> <span class="sparkle-glyph">✦</span>
           </div>
-
-          <input 
-            type="text" 
-            id="search-input" 
-            class="spotlight-search-input" 
-            placeholder="Search bookmarks, jump to web, or type a command..." 
-            autocomplete="off" 
-            spellcheck="false"
-            autofocus
-          />
-
-          <div class="spotlight-hints">
-            <span class="quick-tag hint-chip" data-prefix="/g "><code>/g</code></span>
-            <span class="quick-tag hint-chip" data-prefix="/gh "><code>/gh</code></span>
-            <span class="quick-tag hint-chip" data-prefix="/x "><code>/x</code></span>
-            <span class="quick-tag hint-chip" data-prefix="/p "><code>/p</code></span>
-            <span class="search-shortcut-badge">
-              <span>Ctrl+K</span>
-            </span>
+          <div class="greeting-quote font-mono" id="daily-quote" title="Click to cycle thoughts">
+            "Build systems that grow with you."
           </div>
         </div>
 
-        <!-- Instant Dropdown Results -->
-        <div class="search-results-dropdown" id="search-results"></div>
+        <!-- Spotlight Command Bar -->
+        <div class="spotlight-search-container">
+          <div class="spotlight-search-box">
+            <div class="search-engine-selector" title="Search Scope">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span class="engine-name">All</span>
+            </div>
+
+            <input 
+              type="text" 
+              id="search-input" 
+              class="spotlight-search-input" 
+              placeholder="Search bookmarks, jump to web, or type a command..." 
+              autocomplete="off" 
+              spellcheck="false"
+              autofocus
+            />
+
+            <div class="spotlight-hints">
+              <span class="quick-tag hint-chip" data-prefix="/g "><code>/g</code></span>
+              <span class="quick-tag hint-chip" data-prefix="/gh "><code>/gh</code></span>
+              <span class="quick-tag hint-chip" data-prefix="/x "><code>/x</code></span>
+              <span class="quick-tag hint-chip" data-prefix="/p "><code>/p</code></span>
+              <span class="search-shortcut-badge">
+                <span>Ctrl+K</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Instant Dropdown Results -->
+          <div class="search-results-dropdown" id="search-results"></div>
+        </div>
       </div>
+
+      <!-- Right Artwork Wing -->
+      <a href="https://hermes-agent.nousresearch.com/docs" target="_blank" class="hero-wing hero-wing-right" title="Nous Research Documentation">
+        <div class="hero-wing-art-box">
+          <img src="assets/hermes-hero-art.png" alt="Nous Intelligence" class="hero-wing-img hero-sculpture-img" />
+          <div class="hero-wing-glow"></div>
+        </div>
+        <div class="hero-wing-meta">
+          <span class="hero-wing-badge font-mono">NOUS RESEARCH</span>
+          <span class="hero-wing-label font-mono">AI AGENT CORE</span>
+        </div>
+      </a>
+
     </section>
 
     <!-- 3-Column Dashboard Content Grid -->

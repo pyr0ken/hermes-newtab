@@ -58,35 +58,57 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: -3;
   background: 
-    radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(29, 78, 216, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 0% 100%, rgba(59, 130, 246, 0.03) 0%, transparent 40%);
+    radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 85% 60%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 15% 70%, rgba(29, 78, 216, 0.05) 0%, transparent 50%);
 }
 
 .bg-grid-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: -2;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse at center, black 45%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 45%, transparent 85%);
 }
 
-/* Engraving Vector Watermark */
-.hermes-watermark {
+/* High-Quality Ambient Hermes Background Art */
+.hermes-bg-hero-container {
   position: fixed;
-  right: -2%;
-  bottom: -2%;
-  width: 480px;
-  height: 480px;
-  opacity: 0.025;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   z-index: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hermes-bg-hero-img {
+  width: 100%;
+  max-width: 1100px;
+  height: auto;
+  opacity: 0.17;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.35));
+  mask-image: radial-gradient(circle at 50% 45%, black 25%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, black 25%, transparent 80%);
+  transform: translateY(-4%);
+}
+
+/* Engraving Vector Watermark (Legacy fallback) */
+.hermes-watermark {
+  display: none;
 }
 
 /* Glassmorphic Container / Card */
