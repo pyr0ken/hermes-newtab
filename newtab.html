@@ -18,87 +18,143 @@
 
   <div class="app-container">
     
-    <!-- Unified Command Studio Hero -->
-    <section class="command-hero glass-panel">
-      
-      <!-- Top Meta & Telemetry Row -->
-      <div class="hero-meta-row">
-        <div class="brand-badge">
-          <div class="brand-icon" id="brand-icon-slot"></div>
-          <span class="brand-title font-mono">HERMES</span>
-          <span class="brand-meta font-mono">ARCH LINUX // 7.1.8</span>
+    <!-- Top Meta & System Bar -->
+    <header class="top-meta-bar glass-panel">
+      <div class="brand-badge">
+        <div class="brand-icon" id="brand-icon-slot"></div>
+        <span class="brand-title font-mono">HERMES</span>
+        <span class="brand-meta font-mono">ARCH LINUX // 7.1.8</span>
+      </div>
+
+      <div class="top-meta-right">
+        <div class="weather-pill" id="weather-pill" title="Click for 7-day forecast & change city">
+          <span class="weather-icon" id="weather-icon"></span>
+          <span id="weather-temp">--°C</span>
+          <span class="weather-city" id="weather-city">Karaj</span>
         </div>
 
-        <div class="hero-meta-right">
-          <div class="weather-pill" id="weather-pill" title="Click for 7-day forecast & change city">
-            <span class="weather-icon" id="weather-icon"></span>
-            <span id="weather-temp">--°C</span>
-            <span class="weather-city" id="weather-city">Karaj</span>
-          </div>
+        <div class="top-clock-pill font-mono" title="System Time">
+          <span id="live-clock">12:00:00</span>
+        </div>
 
-          <button class="icon-btn" id="btn-settings" title="Dashboard Settings">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
+        <div class="top-date-pill font-mono" title="Date">
+          <span id="gregorian-date">Wednesday, Sep 09, 2026</span>
+        </div>
+
+        <button class="icon-btn" id="btn-settings" title="Dashboard Settings">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Spotlight Hero Centerpiece -->
+    <section class="spotlight-hero glass-panel">
+      <div class="spotlight-greeting-box">
+        <div class="greeting-title font-serif">
+          <span id="greeting-text">Good evening</span>, <span class="username-highlight">pyr0ken</span> <span class="sparkle-glyph">✦</span>
+        </div>
+        <div class="greeting-quote font-mono" id="daily-quote" title="Click to cycle thoughts">
+          "Build systems that grow with you."
         </div>
       </div>
 
-      <!-- Center Dynamic Greeting & Clock Row -->
-      <div class="hero-center-row">
-        <div class="greeting-box">
-          <div class="greeting-title font-serif">
-            <span id="greeting-text">Good afternoon</span>, <span class="username-highlight">pyr0ken</span> <span class="sparkle-glyph">✦</span>
+      <!-- Spotlight Command Bar -->
+      <div class="spotlight-search-container">
+        <div class="spotlight-search-box">
+          <div class="search-engine-selector" title="Search Scope">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span class="engine-name">All</span>
           </div>
-          <div class="greeting-quote font-mono" id="daily-quote" title="Click to cycle thoughts">
-            "Build systems that grow with you."
-          </div>
-        </div>
 
-        <div class="clock-box">
-          <div class="hero-clock font-serif" id="live-clock">12:00:00</div>
-          <div class="hero-date font-mono" id="gregorian-date">Wednesday, Sep 09, 2026</div>
-        </div>
-      </div>
-
-      <!-- Command Palette / Omni-Search -->
-      <div class="search-container">
-        <div class="search-box">
-          <div class="search-icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          </div>
           <input 
             type="text" 
             id="search-input" 
-            class="search-input" 
+            class="spotlight-search-input" 
             placeholder="Search bookmarks, jump to web, or type a command..." 
             autocomplete="off" 
             spellcheck="false"
             autofocus
           />
-          <div class="search-shortcut-badge">
-            <span>Ctrl+K</span>
-          </div>
-        </div>
 
-        <!-- Quick Search Bangs -->
-        <div class="quick-tags">
-          <span class="quick-tag" data-prefix="/g "><code>/g</code> Google</span>
-          <span class="quick-tag" data-prefix="/gh "><code>/gh</code> GitHub</span>
-          <span class="quick-tag" data-prefix="/x "><code>/x</code> X / Twitter</span>
-          <span class="quick-tag" data-prefix="/p "><code>/p</code> Perplexity</span>
-          <span class="quick-tag" data-prefix="/b "><code>/b</code> Bookmarks</span>
+          <div class="spotlight-hints">
+            <span class="quick-tag hint-chip" data-prefix="/g "><code>/g</code></span>
+            <span class="quick-tag hint-chip" data-prefix="/gh "><code>/gh</code></span>
+            <span class="quick-tag hint-chip" data-prefix="/x "><code>/x</code></span>
+            <span class="quick-tag hint-chip" data-prefix="/p "><code>/p</code></span>
+            <span class="search-shortcut-badge">
+              <span>Ctrl+K</span>
+            </span>
+          </div>
         </div>
 
         <!-- Instant Dropdown Results -->
         <div class="search-results-dropdown" id="search-results"></div>
       </div>
-
     </section>
 
-    <!-- Dashboard Content Grid -->
-    <main class="dashboard-grid">
+    <!-- 3-Column Dashboard Content Grid -->
+    <main class="dashboard-grid-3col">
       
-      <!-- Left Column: Two-Layer Bookmarks (Pinned + Folder Explorer) -->
-      <div class="bookmarks-column" style="display: flex; flex-direction: column; gap: 1rem; min-width: 0;">
+      <!-- Left Column: Hardware Telemetry & Local Services -->
+      <aside class="col-left">
+        
+        <!-- Hardware Telemetry Card -->
+        <div class="glass-panel monitor-card">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
+            <span>System Telemetry</span>
+          </div>
+
+          <!-- CPU Metric -->
+          <div class="metric-row">
+            <div class="metric-header">
+              <span>CPU (AMD Ryzen)</span>
+              <span class="metric-value" id="cpu-val">--%</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="cpu-bar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- RAM Metric -->
+          <div class="metric-row">
+            <div class="metric-header">
+              <span>RAM</span>
+              <span class="metric-value" id="ram-val">-- / -- GB</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="ram-bar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- GPU Metric -->
+          <div class="metric-row">
+            <div class="metric-header">
+              <span>GPU (NVIDIA T600)</span>
+              <span class="metric-value" id="gpu-val">--% • --°C</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="gpu-bar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Local Developer Services Card -->
+        <div class="glass-panel monitor-card services-card">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+            <span>Local Services</span>
+          </div>
+
+          <div class="services-list" id="services-list">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Center Column: Speed Dial & Bookmarks Explorer -->
+      <section class="col-center">
         
         <!-- Layer 1: Pinned / Quick Speed Dial -->
         <section class="pinned-section">
@@ -151,52 +207,11 @@
           </div>
         </section>
 
-      </div>
+      </section>
 
-      <!-- Right Column: System Telemetry, Services & Scratchpad -->
-      <aside class="sidebar-column">
+      <!-- Right Column: Crypto Market Ticker & Scratchpad -->
+      <aside class="col-right">
         
-        <!-- Hardware Telemetry Card -->
-        <div class="glass-panel monitor-card">
-          <div class="section-title">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
-            <span>System Telemetry</span>
-          </div>
-
-          <!-- CPU Metric -->
-          <div class="metric-row">
-            <div class="metric-header">
-              <span>CPU (Ryzen / AMD)</span>
-              <span class="metric-value" id="cpu-val">--%</span>
-            </div>
-            <div class="metric-bar-bg">
-              <div class="metric-bar-fill" id="cpu-bar" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <!-- RAM Metric -->
-          <div class="metric-row">
-            <div class="metric-header">
-              <span>RAM</span>
-              <span class="metric-value" id="ram-val">-- / -- GB</span>
-            </div>
-            <div class="metric-bar-bg">
-              <div class="metric-bar-fill" id="ram-bar" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <!-- GPU Metric -->
-          <div class="metric-row">
-            <div class="metric-header">
-              <span>GPU (NVIDIA T600)</span>
-              <span class="metric-value" id="gpu-val">--% • --°C</span>
-            </div>
-            <div class="metric-bar-bg">
-              <div class="metric-bar-fill" id="gpu-bar" style="width: 0%"></div>
-            </div>
-          </div>
-        </div>
-
         <!-- Live Crypto & Market Ticker Card -->
         <div class="glass-panel market-card">
           <div class="section-title">
@@ -205,18 +220,6 @@
           </div>
 
           <div class="market-grid" id="crypto-grid">
-            <!-- Populated dynamically via JS -->
-          </div>
-        </div>
-
-        <!-- Local Developer Services Card -->
-        <div class="glass-panel monitor-card services-card">
-          <div class="section-title">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
-            <span>Local Services</span>
-          </div>
-
-          <div class="services-list" id="services-list">
             <!-- Populated dynamically via JS -->
           </div>
         </div>
@@ -246,6 +249,7 @@
         </div>
 
       </aside>
+
     </main>
 
     <!-- App Footer -->
