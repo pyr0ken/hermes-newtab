@@ -47,9 +47,9 @@ WATCHED_SERVICES = {
     },
     "ayh": {
         "name": "AYH Fullstack",
-        "port": 8001,
-        "ports": [8001, 3001],
-        "desc": "DRF :8001 • Admin :3001",
+        "port": 3001,
+        "ports": [3001, 8001],
+        "desc": "Admin :3001 • DRF :8001",
         "workdir": "/home/omid/Code/work/AYH01",
         "start_cmd": "/home/omid/Code/work/AYH01/venv/bin/python manage.py runserver 8001 & (cd /home/omid/Code/work/AYH01/admin_panel && npm run dev -- -p 3001)"
     }
@@ -210,14 +210,29 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
 
             services = {}
             for key, info in WATCHED_SERVICES.items():
-                is_alive, lat_ms = SystemMetrics.check_service_port(info["port"])
+                port_list = info.get("ports", [info["port"]])
+                ports_status = []
+                for p in port_list:
+                    p_alive, p_lat = SystemMetrics.check_service_port(p)
+                    label = "Admin" if p == 3001 else ("API" if p == 8001 else f":{p}")
+                    ports_status.append({
+                        "port": p,
+                        "online": p_alive,
+                        "label": label,
+                        "latency_ms": p_lat
+                    })
+
+                is_alive = any(ps["online"] for ps in ports_status)
+                primary_lat = next((ps["latency_ms"] for ps in ports_status if ps["online"]), None)
+
                 services[key] = {
                     "key": key,
                     "name": info["name"],
                     "port": info["port"],
+                    "ports": ports_status,
                     "desc": info.get("desc", ""),
                     "online": is_alive,
-                    "latency_ms": lat_ms if is_alive else None
+                    "latency_ms": primary_lat
                 }
 
             payload = {

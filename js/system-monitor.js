@@ -124,14 +124,28 @@ class SystemMonitor {
         const isOnline = svc.online;
         const localhostUrl = `http://localhost:${svc.port}`;
         const iconSvg = this.serviceIcons[key] || this.serviceIcons.default;
-        
-        const badgeClass = isOnline ? 'online' : 'offline';
-        const badgeText = isOnline 
-          ? (svc.latency_ms !== null && svc.latency_ms !== undefined ? `${svc.latency_ms}ms` : 'ON') 
-          : 'OFF';
 
         const toggleBtnText = isOnline ? 'Stop' : 'Start';
         const toggleBtnClass = isOnline ? 'service-tile-btn running' : 'service-tile-btn';
+
+        let portsHtml = '';
+        if (svc.ports && Array.isArray(svc.ports) && svc.ports.length > 1) {
+          portsHtml = `<div class="service-ports-group">` + svc.ports.map(p => {
+            const pUrl = `http://localhost:${p.port}`;
+            const isAlive = p.online ? 'is-alive' : '';
+            return `
+              <span class="service-port-chip ${isAlive}" data-port-url="${pUrl}" title="Open ${p.label} (http://localhost:${p.port})">
+                :${p.port}<span class="chip-tag">${p.label}</span>
+              </span>
+            `;
+          }).join('') + `</div>`;
+        } else {
+          portsHtml = `
+            <span class="service-port-chip ${isOnline ? 'is-alive' : ''}" data-port-url="${localhostUrl}" title="Open http://localhost:${svc.port}">
+              :${svc.port}
+            </span>
+          `;
+        }
 
         return `
           <div class="service-tile ${isOnline ? 'is-online' : 'is-offline'}" data-url="${localhostUrl}" data-online="${isOnline}" title="${svc.name} (${localhostUrl}) — Click to open">
@@ -140,11 +154,10 @@ class SystemMonitor {
                 <span class="service-tile-icon ${isOnline ? 'online' : ''}">${iconSvg}</span>
                 <span class="service-tile-name font-mono">${svc.name}</span>
               </div>
-              <span class="service-tile-badge ${badgeClass} font-mono">${badgeText}</span>
             </div>
 
             <div class="service-tile-middle font-mono">
-              <span class="service-tile-port">:${svc.port}</span>
+              ${portsHtml}
               <button class="${toggleBtnClass}" data-svc-key="${key}" title="${isOnline ? 'Stop service' : 'Start service'}">
                 ${toggleBtnText}
               </button>
@@ -157,7 +170,7 @@ class SystemMonitor {
         `;
       }).join('');
 
-      // Attach click listeners to tiles and toggle buttons
+      // Attach click listeners to tiles, port chips and toggle buttons
       this.elements.servicesList.querySelectorAll('.service-tile').forEach(tile => {
         // Toggle button click
         const btn = tile.querySelector('.service-tile-btn');
@@ -170,9 +183,19 @@ class SystemMonitor {
           };
         }
 
+        // Port chip click
+        tile.querySelectorAll('.service-port-chip').forEach(chip => {
+          chip.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const portUrl = chip.dataset.portUrl;
+            if (portUrl) this.openAdjacentTab(portUrl, true);
+          };
+        });
+
         // Tile navigation click (always open in adjacent new tab)
         tile.onclick = (e) => {
-          if (e.target.closest('.service-tile-btn')) return;
+          if (e.target.closest('.service-tile-btn, .service-port-chip')) return;
           const url = tile.dataset.url;
           if (!url) return;
           this.openAdjacentTab(url, true);
