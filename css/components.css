@@ -468,102 +468,6 @@
   align-items: start;
 }
 
-/* ============================================================
-   BOOKMARKS & FOLDER EXPLORER SECTION
-   ============================================================ */
-.bookmark-card *,
-.bookmark-list-row * {
-  pointer-events: none;
-}
-
-.bookmark-favicon {
-  -webkit-user-drag: none !important;
-  user-drag: none !important;
-}
-
-.bookmark-card {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.65rem 0.85rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  min-width: 0;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-user-drag: element;
-}
-
-.bookmark-list-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.45rem 0.75rem;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  gap: 1rem;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-user-drag: element;
-}
-
-.is-dragging {
-  opacity: 0.4 !important;
-  transform: scale(0.96) !important;
-  border: 1px dashed var(--accent-blue) !important;
-}
-
-.drag-over {
-  border-color: var(--accent-blue) !important;
-  background: rgba(59, 130, 246, 0.18) !important;
-  box-shadow: 0 0 18px rgba(59, 130, 246, 0.5) !important;
-  transform: scale(1.04) !important;
-}
-
-.dropzone-active {
-  outline: 2px dashed rgba(59, 130, 246, 0.6) !important;
-  outline-offset: 4px;
-  background: rgba(59, 130, 246, 0.06) !important;
-  border-radius: var(--radius-md);
-}
-
-.tab-drag-over {
-  background: rgba(59, 130, 246, 0.3) !important;
-  border-color: var(--accent-blue) !important;
-  transform: scale(1.06) !important;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6) !important;
-}
-
-.explorer-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  background: rgba(13, 18, 28, 0.4);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
-  padding: 1.2rem;
-  backdrop-filter: blur(16px);
-  min-width: 0;
-}
-
-.explorer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
 .section-title {
   font-family: var(--font-mono);
   font-size: 0.78rem;
@@ -574,256 +478,6 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.explorer-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.view-toggle-group {
-  display: flex;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 2px;
-}
-
-.view-toggle-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  padding: 0.25rem 0.45rem;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.view-toggle-btn.active {
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--text-primary);
-}
-
-/* Category Tabs Carousel */
-.category-carousel-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  overflow: hidden;
-}
-
-.carousel-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 5;
-  background: rgba(13, 18, 28, 0.9);
-  border: 1px solid var(--border-card);
-  color: var(--text-secondary);
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.carousel-nav-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--accent-blue);
-  background: var(--bg-subtle);
-}
-
-.carousel-nav-btn.prev {
-  left: 0;
-}
-
-.carousel-nav-btn.next {
-  right: 0;
-}
-
-.category-tabs {
-  display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none; /* Firefox */
-  padding: 0.25rem 1.75rem;
-  width: 100%;
-}
-
-.category-tabs::-webkit-scrollbar {
-  display: none; /* Chrome */
-}
-
-.category-tab {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-card);
-  color: var(--text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.category-tab.active,
-.category-tab:hover {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: var(--border-card-hover);
-  color: var(--text-primary);
-}
-
-.tab-badge {
-  font-size: 0.65rem;
-  padding: 0.1rem 0.35rem;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-full);
-  color: var(--text-secondary);
-}
-
-.category-tab.active .tab-badge {
-  background: rgba(59, 130, 246, 0.3);
-  color: var(--text-primary);
-}
-
-/* Bounded Bookmarks Scroll Container */
-.folder-bookmarks-wrapper {
-  max-height: 420px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 0.4rem;
-  margin-top: 0.25rem;
-}
-
-/* Mode 1: Responsive Grid */
-.bookmarks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.55rem;
-}
-
-.bookmark-card {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.75rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  min-width: 0;
-}
-
-.bookmark-card:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.045);
-  border-color: var(--border-card-hover);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.bookmark-favicon {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.bookmark-details {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.bookmark-name {
-  font-size: 0.78rem;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  unicode-bidi: plaintext;
-  text-align: start;
-}
-
-.bookmark-domain {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Mode 2: Compact List View */
-.bookmarks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.bookmark-list-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.45rem 0.75rem;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  gap: 1rem;
-}
-
-.bookmark-list-row:hover {
-  background: rgba(59, 130, 246, 0.08);
-  border-color: var(--border-card-hover);
-}
-
-.bookmark-list-left {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.bookmark-list-name {
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bookmark-list-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.bookmark-list-domain {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--text-muted);
 }
 
 /* Sidebar Column (System Monitor & Scratchpad) */
@@ -1703,4 +1357,311 @@
   color: var(--text-muted);
   font-size: 0.85rem;
 }
+
+/* ============================================================
+   GITHUB CONTRIBUTIONS HEATMAP CARD
+   ============================================================ */
+.github-graph-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: rgba(13, 18, 28, 0.4);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem 1rem 1.25rem;
+  backdrop-filter: blur(16px);
+  min-width: 0;
+}
+
+.github-graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.github-user-link {
+  font-size: 0.68rem;
+  color: var(--accent-blue-light);
+  text-decoration: none;
+  padding: 0.15rem 0.45rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  margin-left: 0.35rem;
+}
+
+.github-user-link:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+.contrib-total-badge {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.github-heatmap-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+
+.github-heatmap-svg {
+  width: 100%;
+  height: auto;
+  min-width: 660px;
+  display: block;
+}
+
+.cal-svg-month {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--text-muted);
+}
+
+.cal-svg-weekday {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  fill: var(--text-dim);
+}
+
+.gh-square {
+  transition: opacity 120ms ease;
+  cursor: pointer;
+}
+
+.gh-square:hover {
+  stroke: #ffffff;
+  stroke-width: 1.2px;
+  opacity: 0.9;
+}
+
+.github-heatmap-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.heatmap-legend-cells {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.legend-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-cell.lvl-0 { background: rgba(255, 255, 255, 0.04); }
+.legend-cell.lvl-1 { background: #0e4429; }
+.legend-cell.lvl-2 { background: #006d32; }
+.legend-cell.lvl-3 { background: #26a641; }
+.legend-cell.lvl-4 { background: #39d353; }
+
+/* Floating Tooltip */
+.github-heatmap-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background: rgba(10, 14, 23, 0.95);
+  border: 1px solid var(--border-card);
+  backdrop-filter: blur(12px);
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  transition: opacity 100ms ease;
+  white-space: nowrap;
+}
+
+.github-heatmap-tooltip.visible {
+  opacity: 1;
+}
+
+.tooltip-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #38bdf8;
+}
+
+.tooltip-date {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+.tooltip-fa {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   CENTER DUAL GRID: CALENDAR & WEATHER BOXES
+   ============================================================ */
+.center-dual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.15rem;
+  width: 100%;
+  align-items: start;
+}
+
+.dash-calendar-card,
+.dash-weather-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: rgba(13, 18, 28, 0.4);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem 1rem 1.25rem;
+  backdrop-filter: blur(16px);
+  min-width: 0;
+}
+
+.dash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Calendar Card specific */
+.cal-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.15rem 0.25rem;
+}
+
+/* Weather Card specific */
+.weather-city-badge {
+  font-size: 0.72rem;
+  color: var(--accent-blue-light);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.weather-city-badge:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+.edit-hint {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.dash-weather-current {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(13, 18, 28, 0.5) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.dash-current-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.dash-weather-icon-lg {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+}
+
+.dash-weather-icon-lg svg {
+  width: 32px;
+  height: 32px;
+  stroke: #f59e0b;
+}
+
+.dash-weather-temp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.dash-weather-big-temp {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.dash-weather-desc {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.dash-weather-stats {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  font-size: 0.68rem;
+  padding: 0.18rem 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dash-forecast-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dash-forecast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.forecast-hint {
+  font-size: 0.62rem;
+  color: var(--accent-blue-light);
+}
+
+
 

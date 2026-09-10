@@ -1,8 +1,7 @@
-// Hermes NewTab — Dual Calendar Engine (Persian / Fingilish & Gregorian)
+// Hermes NewTab — Dual Calendar Engine (Persian Fingilish & Gregorian)
 
 class DualCalendarEngine {
   constructor() {
-    this.modalEl = null;
     this.datePillEl = null;
     this.gregDateEl = null;
     this.persianDateEl = null;
@@ -18,7 +17,7 @@ class DualCalendarEngine {
     this.faShortWeekdays = ['Shan', 'Yek', 'Dosh', 'Sesh', 'Chah', 'Panj', 'Jom'];
     this.faMonths = ['Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad', 'Shahrivar', 'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'];
     this.faShortMonths = ['Far', 'Ord', 'Kho', 'Tir', 'Mor', 'Shah', 'Meh', 'Aban', 'Azar', 'Dey', 'Bah', 'Esf'];
-    this.faSeasons = ['Bahar', 'Tabestan', 'Paeez', 'Zemestan'];
+    this.faSeasons = ['Bahar (Spring)', 'Tabestan (Summer)', 'Paeez (Autumn)', 'Zemestan (Winter)'];
 
     // Gregorian localization
     this.enWeekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -27,7 +26,7 @@ class DualCalendarEngine {
     this.enShortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   }
 
-  // --- Date Math Conversion Algorithms ---
+  // --- Astronomical Date Math Conversion ---
 
   toJalaali(gy, gm, gd) {
     const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -104,31 +103,15 @@ class DualCalendarEngine {
   }
 
   getJalaliSeason(jm) {
-    if (jm >= 1 && jm <= 3) return 'Bahar (Spring)';
-    if (jm >= 4 && jm <= 6) return 'Tabestan (Summer)';
-    if (jm >= 7 && jm <= 9) return 'Paeez (Autumn)';
-    return 'Zemestan (Winter)';
-  }
-
-  getDayOfYear(now) {
-    const start = new Date(now.getFullYear(), 0, 0);
-    const diff = now - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    return Math.floor(diff / oneDay);
-  }
-
-  getWeekNumber(d) {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    if (jm >= 1 && jm <= 3) return this.faSeasons[0];
+    if (jm >= 4 && jm <= 6) return this.faSeasons[1];
+    if (jm >= 7 && jm <= 9) return this.faSeasons[2];
+    return this.faSeasons[3];
   }
 
   // --- UI & Lifecycle ---
 
   init() {
-    this.modalEl = document.getElementById('calendar-modal');
     this.datePillEl = document.getElementById('btn-open-calendar');
     this.gregDateEl = document.getElementById('gregorian-date');
     this.persianDateEl = document.getElementById('persian-date');
@@ -140,6 +123,7 @@ class DualCalendarEngine {
 
     this.updateDatePills(now);
     this.setupEventListeners();
+    this.renderCalendar();
   }
 
   updateDatePills(now = new Date()) {
@@ -163,30 +147,21 @@ class DualCalendarEngine {
   }
 
   setupEventListeners() {
-    // Open modal click
+    // Top Date pill click (scroll to or highlight calendar card)
     if (this.datePillEl) {
-      this.datePillEl.addEventListener('click', () => this.openModal());
-    }
-
-    // Modal close events
-    const closeBtn = document.getElementById('btn-close-calendar');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.closeModal());
-    }
-
-    if (this.modalEl) {
-      this.modalEl.addEventListener('click', (e) => {
-        if (e.target === this.modalEl) this.closeModal();
+      this.datePillEl.addEventListener('click', () => {
+        const calCard = document.getElementById('dash-calendar-card');
+        if (calCard) {
+          calCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          calCard.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.4)';
+          setTimeout(() => {
+            calCard.style.boxShadow = '';
+          }, 1200);
+        }
       });
     }
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.modalEl && this.modalEl.classList.contains('active')) {
-        this.closeModal();
-      }
-    });
-
-    // Calendar navigation buttons inside modal
+    // Calendar navigation buttons
     const prevBtn = document.getElementById('cal-prev-month');
     const nextBtn = document.getElementById('cal-next-month');
     const todayBtn = document.getElementById('cal-btn-today');
@@ -218,7 +193,7 @@ class DualCalendarEngine {
   setMode(mode) {
     this.currentMode = mode;
     localStorage.setItem('hermes_calendar_mode', mode);
-    this.renderModal();
+    this.renderCalendar();
   }
 
   navigateMonth(delta) {
@@ -247,7 +222,7 @@ class DualCalendarEngine {
       this.activeGregorian.gm = nm;
       this.activeGregorian.gy = ny;
     }
-    this.renderModal();
+    this.renderCalendar();
   }
 
   jumpToToday() {
@@ -256,61 +231,16 @@ class DualCalendarEngine {
     this.activeJalali = { jy: j.jy, jm: j.jm, jd: j.jd };
     this.activeGregorian = { gy: now.getFullYear(), gm: now.getMonth() + 1, gd: now.getDate() };
     this.selectedDateInfo = null;
-    this.renderModal();
+    this.renderCalendar();
   }
 
-  openModal() {
-    this.jumpToToday();
-    if (this.modalEl) {
-      this.modalEl.classList.add('active');
-    }
-  }
-
-  closeModal() {
-    if (this.modalEl) {
-      this.modalEl.classList.remove('active');
-    }
-  }
-
-  renderModal() {
-    if (!this.modalEl) return;
-
-    // 1. Render Current Overview Cards
+  renderCalendar() {
     const now = new Date();
     const todayJ = this.toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
     const gDayOfWeek = now.getDay();
     const jDayOfWeekIdx = (gDayOfWeek + 1) % 7;
 
-    const faTodayCard = document.getElementById('cal-persian-overview');
-    if (faTodayCard) {
-      const season = this.getJalaliSeason(todayJ.jm);
-      faTodayCard.innerHTML = `
-        <div class="cal-badge font-mono">TAGHVIM-E KHORSHIDI (FINGILISH)</div>
-        <div class="cal-card-title">${this.faWeekdays[jDayOfWeekIdx]}, ${todayJ.jd} ${this.faMonths[todayJ.jm - 1]} ${todayJ.jy}</div>
-        <div class="cal-card-meta font-mono">
-          <span>${String(todayJ.jy).padStart(4, '0')}/${String(todayJ.jm).padStart(2, '0')}/${String(todayJ.jd).padStart(2, '0')}</span>
-          <span>•</span>
-          <span>${season}</span>
-        </div>
-      `;
-    }
-
-    const enTodayCard = document.getElementById('cal-gregorian-overview');
-    if (enTodayCard) {
-      const dayOfYear = this.getDayOfYear(now);
-      const weekNum = this.getWeekNumber(now);
-      enTodayCard.innerHTML = `
-        <div class="cal-badge font-mono">GREGORIAN CALENDAR</div>
-        <div class="cal-card-title">${this.enWeekdays[gDayOfWeek]}, ${now.getDate()} ${this.enMonths[now.getMonth()]} ${now.getFullYear()}</div>
-        <div class="cal-card-meta font-mono">
-          <span>${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}</span>
-          <span>•</span>
-          <span>Day ${dayOfYear} • W${weekNum}</span>
-        </div>
-      `;
-    }
-
-    // 2. Mode Buttons State
+    // 1. Mode Buttons State
     const btnJalali = document.getElementById('cal-toggle-jalali');
     const btnGreg = document.getElementById('cal-toggle-gregorian');
     if (btnJalali && btnGreg) {
@@ -323,7 +253,7 @@ class DualCalendarEngine {
       }
     }
 
-    // 3. Render Month Title & Grid
+    // 2. Render Month Title & Grid
     const monthTitleEl = document.getElementById('cal-current-month-title');
     const gridEl = document.getElementById('cal-days-grid');
     const weekdayHeadersEl = document.getElementById('cal-weekday-headers');
@@ -386,6 +316,7 @@ class DualCalendarEngine {
             data-gd="${cellG.gd}"
             data-weekday="${this.faWeekdays[dayOfWeekIdx]}"
             data-en-weekday="${this.enWeekdays[cellDate.getDay()]}"
+            title="${this.faWeekdays[dayOfWeekIdx]}, ${d} ${curMonthName} ↔ ${this.enWeekdays[cellDate.getDay()]}, ${cellG.gd} ${this.enMonths[cellG.gm - 1]}"
           >
             <span class="cal-day-num">${d}</span>
             <span class="cal-day-sub font-mono">${subText}</span>
@@ -455,6 +386,7 @@ class DualCalendarEngine {
             data-gd="${d}"
             data-weekday="${this.faWeekdays[jDayOfWeekIdx]}"
             data-en-weekday="${this.enWeekdays[gDayOfWeek]}"
+            title="${this.enWeekdays[gDayOfWeek]}, ${d} ${curMonthName} ↔ ${this.faWeekdays[jDayOfWeekIdx]}, ${cellJ.jd} ${this.faMonths[cellJ.jm - 1]}"
           >
             <span class="cal-day-num">${d}</span>
             <span class="cal-day-sub font-mono">${subText}</span>
@@ -467,7 +399,7 @@ class DualCalendarEngine {
       }
     }
 
-    // 4. Attach cell click handlers
+    // 3. Attach cell click handlers
     if (gridEl) {
       gridEl.querySelectorAll('.cal-day-cell:not(.is-empty)').forEach(cell => {
         cell.onclick = () => {
@@ -491,7 +423,7 @@ class DualCalendarEngine {
       });
     }
 
-    // 5. Render inspector footer if selected, or default to today
+    // 4. Render inspector footer if selected, or default to today
     if (this.selectedDateInfo) {
       this.renderSelectedInfo(this.selectedDateInfo);
     } else {
@@ -512,12 +444,12 @@ class DualCalendarEngine {
     const inspectorEl = document.getElementById('cal-selected-inspector');
     if (!inspectorEl) return;
 
-    const faStr = `${info.weekday}, ${info.jd} ${this.faMonths[info.jm - 1]} ${info.jy} (${String(info.jy).padStart(4, '0')}/${String(info.jm).padStart(2, '0')}/${String(info.jd).padStart(2, '0')})`;
-    const enStr = `${info.enWeekday}, ${info.gd} ${this.enMonths[info.gm - 1]} ${info.gy} (${info.gy}-${String(info.gm).padStart(2, '0')}-${String(info.gd).padStart(2, '0')})`;
+    const faStr = `${info.weekday}, ${info.jd} ${this.faMonths[info.jm - 1]} ${info.jy}`;
+    const enStr = `${info.enWeekday}, ${info.gd} ${this.enMonths[info.gm - 1]} ${info.gy}`;
 
     inspectorEl.innerHTML = `
       <div class="inspector-item">
-        <span class="inspector-label font-mono">SHAMSI (FINGILISH):</span>
+        <span class="inspector-label font-mono">SHAMSI:</span>
         <span class="inspector-val">${faStr}</span>
       </div>
       <div class="inspector-divider">↔</div>

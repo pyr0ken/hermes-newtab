@@ -165,6 +165,60 @@ class WeatherEngine {
     if (this.iconEl && typeof ICONS !== 'undefined') {
       this.iconEl.innerHTML = ICONS[details.icon] || ICONS.sun;
     }
+
+    this.renderDashboardCard(data);
+  }
+
+  renderDashboardCard(data) {
+    const details = this.getWeatherDetails(data.code, data.isDay);
+    const cityEl = document.getElementById('dash-weather-city');
+    const currentEl = document.getElementById('dash-weather-current');
+    const weeklyEl = document.getElementById('dash-weekly-forecast-grid');
+
+    if (cityEl) {
+      cityEl.textContent = data.city;
+    }
+
+    if (currentEl) {
+      const iconSvg = (typeof ICONS !== 'undefined' && ICONS[details.icon]) ? ICONS[details.icon] : '';
+      const todayRain = (data.daily && data.daily[0]) ? data.daily[0].rainChance : 0;
+
+      currentEl.innerHTML = `
+        <div class="dash-current-main">
+          <div class="dash-weather-icon-lg">${iconSvg}</div>
+          <div class="dash-weather-temp-wrap">
+            <span class="dash-weather-big-temp font-mono">${data.temp}°C</span>
+            <span class="dash-weather-desc">${details.label} • Feels ${data.apparentTemp}°C</span>
+          </div>
+        </div>
+
+        <div class="dash-weather-stats font-mono">
+          <div class="stat-pill" title="Humidity">💧 <span>${data.humidity}%</span></div>
+          <div class="stat-pill" title="Wind Speed">💨 <span>${data.windSpeed} km/h</span></div>
+          <div class="stat-pill" title="Precipitation Probability">🌧 <span>${todayRain}%</span></div>
+        </div>
+      `;
+    }
+
+    if (weeklyEl && data.daily && Array.isArray(data.daily)) {
+      weeklyEl.innerHTML = data.daily.map((d, idx) => {
+        const dDetails = this.getWeatherDetails(d.code, true);
+        const iconSvg = (typeof ICONS !== 'undefined' && ICONS[dDetails.icon]) ? ICONS[dDetails.icon] : '';
+        const isToday = idx === 0 ? 'today' : '';
+        const rainBadge = d.rainChance > 0 
+          ? `<span class="rain-chance-badge">${d.rainChance}%</span>` 
+          : `<span style="font-size:0.6rem;opacity:0.3;">0%</span>`;
+
+        return `
+          <div class="forecast-day-card ${isToday}">
+            <span class="forecast-day-name">${d.dayName}</span>
+            <div class="forecast-day-icon">${iconSvg}</div>
+            <div class="forecast-day-temps font-mono">${d.maxTemp}° <span class="forecast-min-temp">${d.minTemp}°</span></div>
+            ${rainBadge}
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   renderModalContent(data) {
@@ -230,9 +284,16 @@ class WeatherEngine {
   setupListeners() {
     this.refreshElements();
 
-    // 1. Open Modal on Weather Pill Click
+    // 1. Open Modal on Weather Pill or Dashboard City Badge Click
     if (this.pillEl) {
       this.pillEl.addEventListener('click', () => {
+        this.openModal();
+      });
+    }
+
+    const cityBadge = document.getElementById('weather-city-badge');
+    if (cityBadge) {
+      cityBadge.addEventListener('click', () => {
         this.openModal();
       });
     }

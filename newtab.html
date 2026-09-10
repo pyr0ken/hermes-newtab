@@ -156,46 +156,114 @@
 
       </aside>
 
-      <!-- Center Column: Bookmarks Explorer -->
+      <!-- Center Column: GitHub Activity & Bookmarks Explorer -->
       <section class="col-center">
         
-        <!-- Bookmarks Explorer & Workspaces -->
-        <section class="explorer-section">
-          <div class="explorer-header">
+        <!-- GitHub Contributions Heatmap Card -->
+        <section class="github-graph-card glass-panel" id="github-graph-card">
+          <div class="github-graph-header">
             <div class="section-title">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-              <span id="current-folder-title">Folder Explorer</span>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              <span>GitHub Activity</span>
+              <a href="https://github.com/pyr0ken" target="_blank" class="github-user-link font-mono">@pyr0ken</a>
             </div>
 
-            <div class="explorer-controls">
-              <!-- View Mode Toggle -->
-              <div class="view-toggle-group">
-                <button class="view-toggle-btn active" id="btn-view-grid" title="Grid View">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                </button>
-                <button class="view-toggle-btn" id="btn-view-list" title="Compact List View">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
-                </button>
-              </div>
+            <div class="github-stats-meta font-mono" id="github-stats-meta">
+              <span class="contrib-total-badge" id="contrib-total">-- contributions in the last year</span>
             </div>
           </div>
 
-          <!-- Category Carousel -->
-          <div class="category-carousel-wrapper">
-            <button class="carousel-nav-btn prev" id="carousel-prev" title="Scroll left">‹</button>
-            <div class="category-tabs" id="category-tabs">
-              <!-- Dynamically populated folder tabs -->
-            </div>
-            <button class="carousel-nav-btn next" id="carousel-next" title="Scroll right">›</button>
+          <!-- Heatmap Container (SVG Grid + Tooltip) -->
+          <div class="github-heatmap-wrapper" id="github-heatmap-wrapper">
+            <!-- Rendered dynamically -->
           </div>
 
-          <!-- Bounded Bookmarks View Container -->
-          <div class="folder-bookmarks-wrapper" id="folder-bookmarks-wrapper">
-            <div class="bookmarks-grid" id="bookmarks-grid">
-              <!-- Rendered dynamically -->
+          <div class="github-heatmap-footer font-mono">
+            <span class="heatmap-legend-label">Less</span>
+            <div class="heatmap-legend-cells">
+              <span class="legend-cell lvl-0" title="0 contributions"></span>
+              <span class="legend-cell lvl-1" title="1-3 contributions"></span>
+              <span class="legend-cell lvl-2" title="4-6 contributions"></span>
+              <span class="legend-cell lvl-3" title="7-9 contributions"></span>
+              <span class="legend-cell lvl-4" title="10+ contributions"></span>
             </div>
+            <span class="heatmap-legend-label">More</span>
           </div>
         </section>
+
+        <!-- Center Dual Grid: Calendar & Weather Cards -->
+        <div class="center-dual-grid">
+          
+          <!-- Box 1: Dual Interactive Calendar Card -->
+          <section class="dash-calendar-card glass-panel" id="dash-calendar-card">
+            <div class="dash-card-header">
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#60a5fa" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <span>Calendar</span>
+              </div>
+              
+              <div class="cal-mode-switcher">
+                <button class="cal-mode-btn active" id="cal-toggle-jalali">Shamsi</button>
+                <button class="cal-mode-btn" id="cal-toggle-gregorian">Gregorian</button>
+              </div>
+            </div>
+
+            <!-- Month Navigator -->
+            <div class="cal-nav-row font-mono">
+              <button class="icon-btn cal-nav-btn" id="cal-prev-month" title="Previous Month">‹</button>
+              <span class="cal-current-month-title font-mono" id="cal-current-month-title">Shahrivar 1405</span>
+              <button class="icon-btn cal-nav-btn" id="cal-next-month" title="Next Month">›</button>
+              <button class="cal-btn-today font-mono" id="cal-btn-today" title="Jump to Today">Today</button>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="cal-month-grid-wrapper">
+              <div class="cal-weekday-headers font-mono" id="cal-weekday-headers">
+                <!-- Populated dynamically via JS -->
+              </div>
+              <div class="cal-days-grid" id="cal-days-grid">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+
+            <!-- Inspector / Selected date preview -->
+            <div class="cal-selected-inspector font-mono" id="cal-selected-inspector">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </section>
+
+          <!-- Box 2: Weather & 7-Day Forecast Card -->
+          <section class="dash-weather-card glass-panel" id="dash-weather-card">
+            <div class="dash-card-header">
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                <span>Weather</span>
+              </div>
+              
+              <div class="weather-city-badge font-mono" id="weather-city-badge" title="Click to change city / 7-day modal">
+                <span id="dash-weather-city">Karaj</span>
+                <span class="edit-hint">✎</span>
+              </div>
+            </div>
+
+            <!-- Current Weather Highlight -->
+            <div class="dash-weather-current" id="dash-weather-current">
+              <!-- Populated via JS -->
+            </div>
+
+            <!-- 7-Day Forecast Grid -->
+            <div class="dash-forecast-box">
+              <div class="dash-forecast-header font-mono">
+                <span>7-Day Forecast</span>
+                <span class="forecast-hint">Daily Rain %</span>
+              </div>
+              <div class="weekly-forecast-grid" id="dash-weekly-forecast-grid">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </section>
+
+        </div>
 
       </section>
 
@@ -362,6 +430,7 @@
   <script src="js/icons.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/calendar.js"></script>
+  <script src="js/github-activity.js"></script>
   <script src="js/crypto-ticker.js"></script>
   <script src="js/bookmarks.js"></script>
   <script src="js/command-palette.js"></script>
