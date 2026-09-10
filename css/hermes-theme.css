@@ -95,15 +95,18 @@ body {
 }
 
 .hermes-bg-hero-img {
-  width: 100%;
-  max-width: 1100px;
+  position: absolute;
+  top: -4%;
+  right: 6%;
+  width: 58vw;
+  max-width: 960px;
   height: auto;
-  opacity: 0.17;
-  mix-blend-mode: screen;
-  filter: drop-shadow(0 0 50px rgba(59, 130, 246, 0.35));
-  mask-image: radial-gradient(circle at 50% 45%, black 25%, transparent 80%);
-  -webkit-mask-image: radial-gradient(circle at 50% 45%, black 25%, transparent 80%);
-  transform: translateY(-4%);
+  opacity: 0.22;
+  filter: drop-shadow(0 0 60px rgba(59, 130, 246, 0.45));
+  mask-image: radial-gradient(circle at 55% 45%, black 35%, transparent 85%);
+  -webkit-mask-image: radial-gradient(circle at 55% 45%, black 35%, transparent 85%);
+  pointer-events: none;
+  transition: opacity 0.5s ease;
 }
 
 /* Engraving Vector Watermark (Legacy fallback) */
