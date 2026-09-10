@@ -18,6 +18,14 @@ class SystemMonitor {
       gpuBar: document.getElementById('gpu-bar'),
       servicesList: document.getElementById('services-list')
     };
+
+    this.serviceIcons = {
+      paperclip: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
+      omniroute: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>`,
+      oxiroute: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+      golestan: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`,
+      default: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>`
+    };
   }
 
   init() {
@@ -104,10 +112,18 @@ class SystemMonitor {
 
     // Services Interactive Control Matrix
     if (data.services && this.elements.servicesList) {
-      this.elements.servicesList.innerHTML = Object.entries(data.services).map(([key, svc]) => {
+      // Sort online/running services first, then by name
+      const sortedServices = Object.entries(data.services).sort((a, b) => {
+        if (a[1].online && !b[1].online) return -1;
+        if (!a[1].online && b[1].online) return 1;
+        return a[1].name.localeCompare(b[1].name);
+      });
+
+      this.elements.servicesList.innerHTML = sortedServices.map(([key, svc]) => {
         const isOnline = svc.online;
         const dotClass = isOnline ? 'status-dot online' : 'status-dot';
         const localhostUrl = `http://localhost:${svc.port}`;
+        const iconSvg = this.serviceIcons[key] || this.serviceIcons.default;
         
         const latencyHtml = (isOnline && svc.latency_ms !== null && svc.latency_ms !== undefined)
           ? `<span class="service-latency-pill">${svc.latency_ms}ms</span>`
@@ -117,15 +133,16 @@ class SystemMonitor {
         const toggleBtnClass = isOnline ? 'service-toggle-btn running' : 'service-toggle-btn';
 
         return `
-          <div class="service-row" data-url="${localhostUrl}" data-online="${isOnline}" title="${svc.name} (${localhostUrl}) — ${isOnline ? 'Click to open in browser' : 'Offline'}">
+          <div class="service-row ${isOnline ? 'is-online' : 'is-offline'}" data-url="${localhostUrl}" data-online="${isOnline}" title="${svc.name} (${localhostUrl}) — ${isOnline ? 'Click to open in browser' : 'Offline'}">
             <div class="service-left">
-              <div class="service-dot-wrapper">
+              <div class="service-icon-box ${isOnline ? 'online' : ''}">
+                ${iconSvg}
                 <span class="${dotClass}"></span>
               </div>
               <div class="service-details">
                 <span class="service-name">${svc.name}</span>
                 <span class="service-meta">
-                  <span class="service-port-link">:${svc.port}</span>
+                  <span class="service-port-link font-mono">:${svc.port}</span>
                   <span style="opacity:0.4;">•</span>
                   <span>${svc.desc || (isOnline ? 'Ready' : 'Inactive')}</span>
                 </span>
