@@ -1,4 +1,4 @@
-// Hermes NewTab — Dual Calendar Engine (Persian Fingilish & Gregorian)
+// Hermes NewTab — Dual Calendar Engine with Holidays & Occasions (Persian Fingilish & Gregorian)
 
 class DualCalendarEngine {
   constructor() {
@@ -24,6 +24,228 @@ class DualCalendarEngine {
     this.enShortWeekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     this.enMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     this.enShortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // --- Holidays & Occasions Database ---
+    this.initEventsDatabase();
+  }
+
+  initEventsDatabase() {
+    // 1. Fixed Solar Hijri Events (Shamsi)
+    this.shamsiEvents = {
+      // Farvardin
+      '1-1': { title: "Eid-e Nowruz", holiday: true },
+      '1-2': { title: "Eid-e Nowruz", holiday: true },
+      '1-3': { title: "Eid-e Nowruz", holiday: true },
+      '1-4': { title: "Eid-e Nowruz", holiday: true },
+      '1-6': { title: "Zadruz-e Zartosht / Ruz-e Omid", holiday: false },
+      '1-12': { title: "Ruz-e Jomhuri-e Eslami", holiday: true },
+      '1-13': { title: "Sizdah Be-dar (Ruz-e Tabi'at)", holiday: true },
+      '1-18': { title: "Ruz-e Salamati (World Health Day)", holiday: false },
+      '1-25': { title: "Bozorgdasht-e Attar Neyshabouri", holiday: false },
+      '1-29': { title: "Ruz-e Artesh-e Jomhuri-e Eslami", holiday: false },
+
+      // Ordibehesht
+      '2-1': { title: "Bozorgdasht-e Saadi", holiday: false },
+      '2-2': { title: "Jashn-e Ordibeheshtgan / Earth Day", holiday: false },
+      '2-3': { title: "Bozorgdasht-e Sheikh Bahaee / Ruz-e Me'mari", holiday: false },
+      '2-10': { title: "Ruz-e Melli-e Khalij-e Fars", holiday: false },
+      '2-11': { title: "Ruz-e Jahani-e Kargar (Labor Day)", holiday: false },
+      '2-12': { title: "Ruz-e Mo'allem", holiday: false },
+      '2-15': { title: "Jashn-e Miyaneh-ye Bahar / Ruz-e Shiraz", holiday: false },
+      '2-25': { title: "Bozorgdasht-e Ferdowsi & Zaban-e Farsi", holiday: false },
+      '2-28': { title: "Bozorgdasht-e Hakim Omar Khayyam", holiday: false },
+
+      // Khordad
+      '3-1': { title: "Bozorgdasht-e Mulla Sadra", holiday: false },
+      '3-3': { title: "Azadsazi-e Khorramshahr", holiday: false },
+      '3-14': { title: "Rehelat-e Imam Khomeini", holiday: true },
+      '3-15': { title: "Ghiyam-e 15 Khordad", holiday: true },
+      '3-25': { title: "Ruz-e Melli-e Gol o Giah", holiday: false },
+
+      // Tir
+      '4-1': { title: "Jashn-e Ab-pashan / Aghaz-e Tabestan", holiday: false },
+      '4-7': { title: "Shahadat-e Ayatollah Beheshti (7 Tir)", holiday: false },
+      '4-10': { title: "Jashn-e Tirgan", holiday: false },
+      '4-14': { title: "Ruz-e Qalam", holiday: false },
+
+      // Mordad
+      '5-8': { title: "Bozorgdasht-e Sheikh Shahaboddin Sohravardi", holiday: false },
+      '5-10': { title: "Jashn-e Chelleh-ye Tabestan", holiday: false },
+      '5-14': { title: "Sodor-e Farman-e Mashrooteh", holiday: false },
+      '5-17': { title: "Ruz-e Khabarnegar", holiday: false },
+      '5-28': { title: "Koodeta-ye 28 Mordad", holiday: false },
+
+      // Shahrivar
+      '6-1': { title: "Ruz-e Pezeshk / Bozorgdasht-e Avicenna", holiday: false },
+      '6-4': { title: "Jashn-e Shahrivargan / Ruz-e Karmand", holiday: false },
+      '6-5': { title: "Ruz-e Darusazi / Bozorgdasht-e Zakariya Razi", holiday: false },
+      '6-13': { title: "Bozorgdasht-e Aboureyhan Biruni", holiday: false },
+      '6-21': { title: "Ruz-e Cinema", holiday: false },
+      '6-27': { title: "Ruz-e Sher o Adab-e Farsi / Shahriar", holiday: false },
+      '6-31': { title: "Aghaz-e Hafteh-ye Defa-e Moghaddas", holiday: false },
+
+      // Mehr
+      '7-1': { title: "Aghaz-e Paeez / Bazgoshayee-e Madares", holiday: false },
+      '7-7': { title: "Ruz-e Atash-neshani o Emdad", holiday: false },
+      '7-8': { title: "Bozorgdasht-e Mowlana (Rumi)", holiday: false },
+      '7-10': { title: "Jashn-e Mehregan", holiday: false },
+      '7-14': { title: "Ruz-e Dampezeshki", holiday: false },
+      '7-16': { title: "Ruz-e Jahani-e Koudak", holiday: false },
+      '7-20': { title: "Bozorgdasht-e Hafez", holiday: false },
+
+      // Aban
+      '8-1': { title: "Bozorgdasht-e Abou-l-Fazl Beyhaqi", holiday: false },
+      '8-7': { title: "Ruz-e Kourosh-e Bozorg (Cyrus Day)", holiday: false },
+      '8-8': { title: "Ruz-e Nojavan o Basij-e Danesh-amouzi", holiday: false },
+      '8-10': { title: "Jashn-e Abangan", holiday: false },
+      '8-13': { title: "Ruz-e Danesh-amouz", holiday: false },
+      '8-24': { title: "Ruz-e Ketab o Ketabkhani", holiday: false },
+
+      // Azar
+      '9-9': { title: "Jashn-e Azargan", holiday: false },
+      '9-16': { title: "Ruz-e Daneshjou", holiday: false },
+      '9-25': { title: "Ruz-e Pazhouhesh", holiday: false },
+      '9-30': { title: "Shab-e Yalda (Chelle)", holiday: false },
+
+      // Dey
+      '10-1': { title: "Jashn-e Khorram-ruz / Aghaz-e Zemestan", holiday: false },
+      '10-5': { title: "Zamin-larzeh-ye Bam / Ruz-e Imeni", holiday: false },
+      '10-10': { title: "Jashn-e Deygan", holiday: false },
+      '10-20': { title: "Shahadat-e Mirza Taghi Khan Amir Kabir", holiday: false },
+
+      // Bahman
+      '11-1': { title: "Zadruz-e Ferdowsi", holiday: false },
+      '11-10': { title: "Jashn-e Sadeh", holiday: false },
+      '11-12': { title: "Bazgasht-e Imam Khomeini be Iran", holiday: false },
+      '11-22': { title: "Piroozi-e Enghelab-e Eslami", holiday: true },
+      '11-29': { title: "Jashn-e Sepandarmazgan (Ruz-e Eshgh)", holiday: false },
+
+      // Esfand
+      '12-5': { title: "Bozorgdasht-e Khajeh Nasir / Ruz-e Mohandes", holiday: false },
+      '12-14': { title: "Ruz-e Ehsan o Nikookari", holiday: false },
+      '12-15': { title: "Ruz-e Derakht-kari (Arbor Day)", holiday: false },
+      '12-25': { title: "Payan-e Sorayesh-e Shahnameh", holiday: false },
+      '12-29': { title: "Melli Shodan-e San'at-e Naft", holiday: true }
+    };
+
+    // 2. Moving Lunar Hijri Holidays Map for 1403 - 1407
+    this.lunarEvents = {
+      '1403': {
+        '1-22': { title: "Eid-e Saeed-e Fetr", holiday: true },
+        '1-23': { title: "Ta'til-e Eid-e Fetr", holiday: true },
+        '2-15': { title: "Shahadat-e Imam Ja'far Sadegh", holiday: true },
+        '3-28': { title: "Eid-e Saeed-e Qorban", holiday: true },
+        '4-5': { title: "Eid-e Saeed-e Ghadir Khumm", holiday: true },
+        '4-25': { title: "Tasu'a-ye Hosseini", holiday: true },
+        '4-26': { title: "Ashura-ye Hosseini", holiday: true },
+        '6-4': { title: "Arba'een-e Hosseini", holiday: true },
+        '6-12': { title: "Rehelat-e Payambar & Shahadat-e Imam Hasan", holiday: true },
+        '6-14': { title: "Shahadat-e Imam Reza", holiday: true },
+        '6-22': { title: "Shahadat-e Imam Hasan Askari", holiday: true },
+        '6-31': { title: "Milad-e Payambar & Imam Sadegh", holiday: true },
+        '9-15': { title: "Shahadat-e Hazrat-e Fatima", holiday: true },
+        '10-25': { title: "Milad-e Imam Ali / Ruz-e Pedar", holiday: true },
+        '11-9': { title: "Mab'ath-e Hazrat-e Rasool", holiday: true },
+        '11-26': { title: "Milad-e Imam Zaman (Nimeh-ye Sha'ban)", holiday: true }
+      },
+      '1404': {
+        '1-11': { title: "Eid-e Saeed-e Fetr", holiday: true },
+        '1-12': { title: "Ta'til-e Eid-e Fetr", holiday: true },
+        '2-4': { title: "Shahadat-e Imam Ja'far Sadegh", holiday: true },
+        '3-16': { title: "Eid-e Saeed-e Qorban", holiday: true },
+        '3-24': { title: "Eid-e Saeed-e Ghadir Khumm", holiday: true },
+        '4-14': { title: "Tasu'a-ye Hosseini", holiday: true },
+        '4-15': { title: "Ashura-ye Hosseini", holiday: true },
+        '5-24': { title: "Arba'een-e Hosseini", holiday: true },
+        '6-1': { title: "Rehelat-e Payambar & Shahadat-e Imam Hasan", holiday: true },
+        '6-3': { title: "Shahadat-e Imam Reza", holiday: true },
+        '6-12': { title: "Shahadat-e Imam Hasan Askari", holiday: true },
+        '6-21': { title: "Milad-e Payambar & Imam Sadegh", holiday: true },
+        '9-3': { title: "Shahadat-e Hazrat-e Fatima", holiday: true },
+        '10-14': { title: "Milad-e Imam Ali / Ruz-e Pedar", holiday: true },
+        '10-27': { title: "Mab'ath-e Hazrat-e Rasool", holiday: true },
+        '11-15': { title: "Milad-e Imam Zaman (Nimeh-ye Sha'ban)", holiday: true },
+        '12-20': { title: "Shahadat-e Hazrat-e Ali", holiday: true },
+        '12-30': { title: "Eid-e Saeed-e Fetr", holiday: true }
+      },
+      '1405': {
+        '1-1': { title: "Ta'til-e Eid-e Fetr", holiday: true },
+        '1-23': { title: "Shahadat-e Imam Ja'far Sadegh", holiday: true },
+        '3-5': { title: "Eid-e Saeed-e Qorban", holiday: true },
+        '3-13': { title: "Eid-e Saeed-e Ghadir Khumm", holiday: true },
+        '4-3': { title: "Tasu'a-ye Hosseini", holiday: true },
+        '4-4': { title: "Ashura-ye Hosseini", holiday: true },
+        '5-13': { title: "Arba'een-e Hosseini", holiday: true },
+        '5-21': { title: "Rehelat-e Payambar & Shahadat-e Imam Hasan", holiday: true },
+        '5-23': { title: "Shahadat-e Imam Reza", holiday: true },
+        '6-1': { title: "Shahadat-e Imam Hasan Askari", holiday: true },
+        '6-10': { title: "Milad-e Payambar & Imam Sadegh", holiday: true },
+        '8-23': { title: "Shahadat-e Hazrat-e Fatima", holiday: true },
+        '10-4': { title: "Milad-e Imam Ali / Ruz-e Pedar", holiday: true },
+        '10-17': { title: "Mab'ath-e Hazrat-e Rasool", holiday: true },
+        '11-5': { title: "Milad-e Imam Zaman (Nimeh-ye Sha'ban)", holiday: true },
+        '12-10': { title: "Shahadat-e Hazrat-e Ali", holiday: true },
+        '12-19': { title: "Eid-e Saeed-e Fetr", holiday: true },
+        '12-20': { title: "Ta'til-e Eid-e Fetr", holiday: true }
+      },
+      '1406': {
+        '1-12': { title: "Shahadat-e Imam Ja'far Sadegh", holiday: true },
+        '2-26': { title: "Eid-e Saeed-e Qorban", holiday: true },
+        '3-3': { title: "Eid-e Saeed-e Ghadir Khumm", holiday: true },
+        '3-23': { title: "Tasu'a-ye Hosseini", holiday: true },
+        '3-24': { title: "Ashura-ye Hosseini", holiday: true },
+        '5-2': { title: "Arba'een-e Hosseini", holiday: true },
+        '5-10': { title: "Rehelat-e Payambar & Shahadat-e Imam Hasan", holiday: true },
+        '5-12': { title: "Shahadat-e Imam Reza", holiday: true },
+        '5-21': { title: "Shahadat-e Imam Hasan Askari", holiday: true },
+        '5-30': { title: "Milad-e Payambar & Imam Sadegh", holiday: true },
+        '8-12': { title: "Shahadat-e Hazrat-e Fatima", holiday: true },
+        '9-23': { title: "Milad-e Imam Ali / Ruz-e Pedar", holiday: true },
+        '10-6': { title: "Mab'ath-e Hazrat-e Rasool", holiday: true },
+        '10-24': { title: "Milad-e Imam Zaman (Nimeh-ye Sha'ban)", holiday: true },
+        '11-28': { title: "Shahadat-e Hazrat-e Ali", holiday: true },
+        '12-8': { title: "Eid-e Saeed-e Fetr", holiday: true },
+        '12-9': { title: "Ta'til-e Eid-e Fetr", holiday: true }
+      }
+    };
+
+    // 3. International Gregorian Events
+    this.gregorianEvents = {
+      '1-1': { title: "New Year's Day", holiday: false },
+      '2-14': { title: "Valentine's Day", holiday: false },
+      '3-8': { title: "International Women's Day", holiday: false },
+      '3-14': { title: "Pi Day (3.14)", holiday: false },
+      '4-22': { title: "Earth Day", holiday: false },
+      '5-1': { title: "International Workers' Day", holiday: false },
+      '6-5': { title: "World Environment Day", holiday: false },
+      '10-31': { title: "Halloween", holiday: false },
+      '12-25': { title: "Christmas Day", holiday: false },
+      '12-31': { title: "New Year's Eve", holiday: false }
+    };
+  }
+
+  getEventsForDate(jy, jm, jd, gy, gm, gd) {
+    const list = [];
+    const shKey = `${jm}-${jd}`;
+
+    // 1. Fixed Shamsi
+    if (this.shamsiEvents[shKey]) {
+      list.push(this.shamsiEvents[shKey]);
+    }
+
+    // 2. Moving Lunar
+    const yrStr = String(jy);
+    if (this.lunarEvents[yrStr] && this.lunarEvents[yrStr][shKey]) {
+      list.push(this.lunarEvents[yrStr][shKey]);
+    }
+
+    // 3. Gregorian
+    const grKey = `${gm}-${gd}`;
+    if (this.gregorianEvents[grKey]) {
+      list.push(this.gregorianEvents[grKey]);
+    }
+
+    return list;
   }
 
   // --- Astronomical Date Math Conversion ---
@@ -289,7 +511,12 @@ class DualCalendarEngine {
         const cellG = this.toGregorian(this.activeJalali.jy, this.activeJalali.jm, d);
         const cellDate = new Date(cellG.gy, cellG.gm - 1, cellG.gd);
         const dayOfWeekIdx = (cellDate.getDay() + 1) % 7;
-        const isWeekend = dayOfWeekIdx === 6; // Jomeh
+        const isFriday = dayOfWeekIdx === 6; // Jomeh
+
+        // Check events & holiday status
+        const events = this.getEventsForDate(this.activeJalali.jy, this.activeJalali.jm, d, cellG.gy, cellG.gm, cellG.gd);
+        const isHoliday = isFriday || events.some(e => e.holiday);
+        const hasOccasion = events.length > 0;
 
         const isToday = (
           this.activeJalali.jy === todayJ.jy &&
@@ -304,10 +531,16 @@ class DualCalendarEngine {
         );
 
         const subText = `${cellG.gd} ${this.enShortMonths[cellG.gm - 1]}`;
+        const eventDotHtml = hasOccasion 
+          ? `<span class="cal-event-dot ${events.some(e => e.holiday) ? 'is-holiday-dot' : ''}"></span>` 
+          : '';
+
+        const eventTitles = events.map(e => e.title + (e.holiday ? ' (Ta\'til)' : '')).join(' • ');
+        const tooltipStr = `${this.faWeekdays[dayOfWeekIdx]}, ${d} ${curMonthName}${eventTitles ? ' — ' + eventTitles : ''}`;
 
         cellsHtml += `
           <div 
-            class="cal-day-cell ${isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}"
+            class="cal-day-cell ${isHoliday ? 'is-holiday' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}"
             data-jy="${this.activeJalali.jy}"
             data-jm="${this.activeJalali.jm}"
             data-jd="${d}"
@@ -316,10 +549,12 @@ class DualCalendarEngine {
             data-gd="${cellG.gd}"
             data-weekday="${this.faWeekdays[dayOfWeekIdx]}"
             data-en-weekday="${this.enWeekdays[cellDate.getDay()]}"
-            title="${this.faWeekdays[dayOfWeekIdx]}, ${d} ${curMonthName} ↔ ${this.enWeekdays[cellDate.getDay()]}, ${cellG.gd} ${this.enMonths[cellG.gm - 1]}"
+            data-events="${this.escapeHtml(JSON.stringify(events))}"
+            title="${this.escapeHtml(tooltipStr)}"
           >
             <span class="cal-day-num">${d}</span>
             <span class="cal-day-sub font-mono">${subText}</span>
+            ${eventDotHtml}
           </div>
         `;
       }
@@ -359,7 +594,11 @@ class DualCalendarEngine {
         const cellJ = this.toJalaali(this.activeGregorian.gy, this.activeGregorian.gm, d);
         const gDayOfWeek = cellDate.getDay();
         const jDayOfWeekIdx = (gDayOfWeek + 1) % 7;
-        const isWeekend = gDayOfWeek === 0 || gDayOfWeek === 6;
+        const isSunday = gDayOfWeek === 0;
+
+        const events = this.getEventsForDate(cellJ.jy, cellJ.jm, cellJ.jd, this.activeGregorian.gy, this.activeGregorian.gm, d);
+        const isHoliday = isSunday || jDayOfWeekIdx === 6 || events.some(e => e.holiday);
+        const hasOccasion = events.length > 0;
 
         const isToday = (
           this.activeGregorian.gy === now.getFullYear() &&
@@ -374,10 +613,16 @@ class DualCalendarEngine {
         );
 
         const subText = `${cellJ.jd} ${this.faShortMonths[cellJ.jm - 1]}`;
+        const eventDotHtml = hasOccasion 
+          ? `<span class="cal-event-dot ${events.some(e => e.holiday) ? 'is-holiday-dot' : ''}"></span>` 
+          : '';
+
+        const eventTitles = events.map(e => e.title + (e.holiday ? ' (Holiday)' : '')).join(' • ');
+        const tooltipStr = `${this.enWeekdays[gDayOfWeek]}, ${d} ${curMonthName}${eventTitles ? ' — ' + eventTitles : ''}`;
 
         cellsHtml += `
           <div 
-            class="cal-day-cell ${isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}"
+            class="cal-day-cell ${isHoliday ? 'is-holiday' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}"
             data-jy="${cellJ.jy}"
             data-jm="${cellJ.jm}"
             data-jd="${cellJ.jd}"
@@ -386,10 +631,12 @@ class DualCalendarEngine {
             data-gd="${d}"
             data-weekday="${this.faWeekdays[jDayOfWeekIdx]}"
             data-en-weekday="${this.enWeekdays[gDayOfWeek]}"
-            title="${this.enWeekdays[gDayOfWeek]}, ${d} ${curMonthName} ↔ ${this.faWeekdays[jDayOfWeekIdx]}, ${cellJ.jd} ${this.faMonths[cellJ.jm - 1]}"
+            data-events="${this.escapeHtml(JSON.stringify(events))}"
+            title="${this.escapeHtml(tooltipStr)}"
           >
             <span class="cal-day-num">${d}</span>
             <span class="cal-day-sub font-mono">${subText}</span>
+            ${eventDotHtml}
           </div>
         `;
       }
@@ -406,6 +653,11 @@ class DualCalendarEngine {
           gridEl.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('is-selected'));
           cell.classList.add('is-selected');
 
+          let events = [];
+          try {
+            events = JSON.parse(cell.dataset.events || '[]');
+          } catch {}
+
           const info = {
             jy: parseInt(cell.dataset.jy, 10),
             jm: parseInt(cell.dataset.jm, 10),
@@ -414,7 +666,8 @@ class DualCalendarEngine {
             gm: parseInt(cell.dataset.gm, 10),
             gd: parseInt(cell.dataset.gd, 10),
             weekday: cell.dataset.weekday,
-            enWeekday: cell.dataset.enWeekday
+            enWeekday: cell.dataset.enWeekday,
+            events: events
           };
 
           this.selectedDateInfo = info;
@@ -427,6 +680,7 @@ class DualCalendarEngine {
     if (this.selectedDateInfo) {
       this.renderSelectedInfo(this.selectedDateInfo);
     } else {
+      const todayEvents = this.getEventsForDate(todayJ.jy, todayJ.jm, todayJ.jd, now.getFullYear(), now.getMonth() + 1, now.getDate());
       this.renderSelectedInfo({
         jy: todayJ.jy,
         jm: todayJ.jm,
@@ -435,7 +689,8 @@ class DualCalendarEngine {
         gm: now.getMonth() + 1,
         gd: now.getDate(),
         weekday: this.faWeekdays[jDayOfWeekIdx],
-        enWeekday: this.enWeekdays[gDayOfWeek]
+        enWeekday: this.enWeekdays[gDayOfWeek],
+        events: todayEvents
       });
     }
   }
@@ -447,17 +702,43 @@ class DualCalendarEngine {
     const faStr = `${info.weekday}, ${info.jd} ${this.faMonths[info.jm - 1]} ${info.jy}`;
     const enStr = `${info.enWeekday}, ${info.gd} ${this.enMonths[info.gm - 1]} ${info.gy}`;
 
+    let eventsHtml = '';
+    if (info.events && info.events.length > 0) {
+      eventsHtml = `
+        <div class="cal-inspector-events">
+          ${info.events.map(e => `
+            <span class="cal-event-pill ${e.holiday ? 'is-holiday-badge' : ''}">
+              ${e.holiday ? '🛑' : '✨'} ${this.escapeHtml(e.title)} ${e.holiday ? '<span class="holiday-tag font-mono">[TA\'TIL]</span>' : ''}
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
     inspectorEl.innerHTML = `
-      <div class="inspector-item">
-        <span class="inspector-label font-mono">SHAMSI:</span>
-        <span class="inspector-val">${faStr}</span>
+      <div class="cal-inspector-dates">
+        <div class="inspector-item">
+          <span class="inspector-label font-mono">SHAMSI:</span>
+          <span class="inspector-val">${faStr}</span>
+        </div>
+        <div class="inspector-divider">↔</div>
+        <div class="inspector-item">
+          <span class="inspector-label font-mono">GREGORIAN:</span>
+          <span class="inspector-val">${enStr}</span>
+        </div>
       </div>
-      <div class="inspector-divider">↔</div>
-      <div class="inspector-item">
-        <span class="inspector-label font-mono">GREGORIAN:</span>
-        <span class="inspector-val">${enStr}</span>
-      </div>
+      ${eventsHtml}
     `;
+  }
+
+  escapeHtml(str) {
+    return (str || '').replace(/[&<>"']/g, m => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[m]));
   }
 }
 
