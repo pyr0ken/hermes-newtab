@@ -78,14 +78,10 @@ body {
   -webkit-mask-image: radial-gradient(ellipse at center, black 45%, transparent 85%);
 }
 
-/* High-Quality Ambient Hermes Background Art */
+/* High-Quality Ambient Hermes Background Art (Centered & Radiant) */
 .hermes-bg-hero-container {
   position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   pointer-events: none;
   z-index: -1;
   display: flex;
@@ -96,15 +92,16 @@ body {
 
 .hermes-bg-hero-img {
   position: absolute;
-  top: -4%;
-  right: 6%;
-  width: 58vw;
-  max-width: 960px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -48%);
+  width: 76vw;
+  max-width: 1150px;
   height: auto;
-  opacity: 0.22;
-  filter: drop-shadow(0 0 60px rgba(59, 130, 246, 0.45));
-  mask-image: radial-gradient(circle at 55% 45%, black 35%, transparent 85%);
-  -webkit-mask-image: radial-gradient(circle at 55% 45%, black 35%, transparent 85%);
+  opacity: 0.30;
+  filter: drop-shadow(0 0 80px rgba(59, 130, 246, 0.65));
+  mask-image: radial-gradient(circle at 50% 50%, black 42%, transparent 90%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 42%, transparent 90%);
   pointer-events: none;
   transition: opacity 0.5s ease;
 }
@@ -114,14 +111,14 @@ body {
   display: none;
 }
 
-/* Glassmorphic Container / Card */
+/* Glassmorphic Container / Card (Translucent & Radiant) */
 .glass-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(10, 14, 24, 0.58);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   transition: border-color var(--transition-smooth);
 }
 
