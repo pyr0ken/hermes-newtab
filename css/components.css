@@ -570,6 +570,21 @@
   align-items: center;
 }
 
+.ticker-symbol-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ticker-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .ticker-symbol {
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -596,15 +611,28 @@
 
 .ticker-price {
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
+.ticker-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .ticker-name {
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   color: var(--text-muted);
+}
+
+.ticker-subprice {
+  font-size: 0.62rem;
+  color: var(--accent-blue-light);
+  font-weight: 500;
 }
 
 /* Services Interactive Control Matrix */
