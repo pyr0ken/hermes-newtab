@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes AI Side Panel</title>
+  <link rel="stylesheet" href="../css/typography.css">
+  <link rel="stylesheet" href="../css/hermes-theme.css">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body class="sidepanel-body">
+  <!-- Background Atmosphere -->
+  <div class="sidepanel-bg-glow"></div>
+
+  <!-- Top App Header -->
+  <header class="sidepanel-header">
+    <div class="header-branding">
+      <div class="hermes-logo-box">
+        <svg class="hermes-sparkle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="header-titles">
+        <span class="header-title">Hermes <span class="header-badge">Agent</span></span>
+        <span class="header-subtitle" id="active-tab-domain">Loading active tab...</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-toggle-vision" class="btn-icon" title="Toggle Tab Screenshot Context" aria-label="Toggle Vision">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <span class="vision-dot" id="vision-indicator"></span>
+      </button>
+
+      <button id="btn-clear-chat" class="btn-icon" title="Clear Conversation" aria-label="Clear Chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+      </button>
+
+      <button id="btn-open-settings" class="btn-icon" title="Settings & OmniRoute Config" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Active Page Pill Info Bar -->
+  <div class="active-page-bar" id="active-page-bar">
+    <span class="active-page-icon" id="active-page-favicon">🌐</span>
+    <span class="active-page-title" id="active-page-title">Detecting page...</span>
+    <button id="btn-refresh-dom" class="btn-mini-refresh" title="Rescan Page DOM">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Quick Action Pills Row -->
+  <div class="quick-actions-carousel">
+    <button class="quick-chip" data-action="summarize">
+      <span class="chip-icon">⚡</span>
+      <span>خلاصه صفحه</span>
+    </button>
+    <button class="quick-chip" data-action="inspect-elements">
+      <span class="chip-icon">🔍</span>
+      <span>بررسی فرم و دکمهها</span>
+    </button>
+    <button class="quick-chip" data-action="find-actions">
+      <span class="chip-icon">🎯</span>
+      <span>عملیات خودکار</span>
+    </button>
+    <button class="quick-chip" data-action="snap-vision">
+      <span class="chip-icon">📸</span>
+      <span>تحلیل اسکرین</span>
+    </button>
+  </div>
+
+  <!-- Main Chat Conversation Feed -->
+  <main class="chat-feed" id="chat-feed">
+    <!-- Welcome Screen (shown when chat is empty) -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-state-art">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L15 8L21 9L16.5 14L18 20L12 17L6 20L7.5 14L3 9L9 8L12 2Z"/>
+        </svg>
+      </div>
+      <h2 class="empty-state-heading">سلام، دستیار هوشمند هرمس</h2>
+      <p class="empty-state-desc">من به زنده به DOM صفحه و تصویر مرورگر دسترسی دارم. میتونم فرم پر کنم، لینکها رو باز کنم، سرچ بزنم یا محتوا رو خلاصه کنم.</p>
+      
+      <div class="empty-prompt-suggestions">
+        <button class="prompt-pill" data-prompt="این صفحه رو به طور خلاصه و دقیق برام به فارسی توضیح بده.">
+          <span>📄 خلاصه محتوای صفحه جاری</span>
+        </button>
+        <button class="prompt-pill" data-prompt="فیلدهای ورودی و دکمههای این صفحه رو پیدا کن و بگو چطور میشه باهاشون کار کرد.">
+          <span>📝 پیدا کردن فرمها و فیلدهای سرچ</span>
+        </button>
+        <button class="prompt-pill" data-prompt="یک اسکرینشات از این صفحه بگیر و ظاهر و ساختارش رو تحلیل کن.">
+          <span>📸 بررسی بصری ظاهر و نمودارهای صفحه</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="messages-list" id="messages-list"></div>
+  </main>
+
+  <!-- Floating Active Pending Preview (e.g. Screenshot preview) -->
+  <div class="attachment-preview-bar" id="attachment-preview-bar" style="display: none;">
+    <div class="preview-item">
+      <img id="screenshot-thumbnail" src="" alt="Screen attachment" />
+      <span class="preview-label">📸 Tab Viewport Attached</span>
+      <button id="btn-remove-attachment" class="btn-remove-att" title="Remove attachment">×</button>
+    </div>
+  </div>
+
+  <!-- Agent Command Input Bar -->
+  <footer class="sidepanel-input-container">
+    <div class="input-glass-box">
+      <textarea 
+        id="chat-input" 
+        class="chat-textarea" 
+        placeholder="Ask Hermes Agent to inspect, click, search or summarize..." 
+        rows="1"
+        autofocus
+      ></textarea>
+      
+      <div class="input-controls-row">
+        <div class="input-left-tools">
+          <button id="btn-attach-screenshot" class="btn-input-tool" title="Attach active tab screenshot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span class="tool-btn-text">Screen</span>
+          </button>
+          <div class="model-badge-pill" id="current-model-display">gemini-2.5-flash</div>
+        </div>
+
+        <div class="input-right-tools">
+          <button id="btn-send-message" class="btn-send" title="Send (Enter)">
+            <svg id="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            <svg id="icon-stop" style="display: none;" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settings-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙ تنظیمات AI Gateway & Hermes</h3>
+        <button id="btn-close-settings" class="btn-modal-close">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="setting-group">
+          <label class="setting-label">OmniRoute / Gateway API URL:</label>
+          <input type="text" id="setting-gateway-url" class="setting-input" value="http://127.0.0.1:20128/v1" placeholder="http://127.0.0.1:20128/v1" />
+          <span class="setting-hint">Local OmniRoute (:20128) یا Oxiroute (:20200) یا هر OpenAI-compatible endpoint</span>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">API Key (اختیاری برای لوکال):</label>
+          <input type="password" id="setting-api-key" class="setting-input" placeholder="sk-..." />
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">Model Name:</label>
+          <input type="text" id="setting-model-name" class="setting-input" value="gemini-2.5-flash" placeholder="gemini-2.5-flash / claude-3-5-sonnet / gpt-4o" />
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">حداکثر گامهای خودکار ReAct (Max Steps):</label>
+          <input type="number" id="setting-max-steps" class="setting-input" min="1" max="10" value="5" />
+        </div>
+
+        <div class="setting-toggle-row">
+          <div>
+            <div class="toggle-title">تزریق خودکار DOM زنده</div>
+            <div class="toggle-desc">در هر درخواست ساختار فشرده دکمهها و فرمهای صفحه به پرامپت ارسال شود.</div>
+          </div>
+          <input type="checkbox" id="setting-auto-dom" checked class="hermes-switch" />
+        </div>
+
+        <div class="setting-toggle-row">
+          <div>
+            <div class="toggle-title">استریمینگ بلادرنگ (SSE)</div>
+            <div class="toggle-desc">پاسخها به صورت لحظهای توکن به توکن تایپ شوند.</div>
+          </div>
+          <input type="checkbox" id="setting-stream" checked class="hermes-switch" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn-primary">ذخیره تنظیمات</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/icons.js"></script>
+  <script src="agent-engine.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
