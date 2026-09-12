@@ -1,20 +1,56 @@
 {
   "manifest_version": 3,
-  "name": "Hermes NewTab",
-  "version": "1.0.0",
-  "description": "Ultra-fast, Hermes-styled personal browser new tab extension & system dashboard.",
+  "name": "Hermes NewTab & AI Assistant",
+  "version": "1.1.0",
+  "description": "Ultra-fast Hermes New Tab dashboard with integrated AI Web Agent Side Panel.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "action": {
+    "default_title": "Hermes AI Agent",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+C",
+        "mac": "Alt+C"
+      },
+      "description": "Toggle Hermes AI Side Panel"
+    },
+    "open_side_panel": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+H",
+        "mac": "Command+Shift+H"
+      },
+      "description": "Open Hermes Side Panel"
+    }
+  },
   "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "storage",
     "bookmarks",
     "topSites",
-    "storage",
     "favicon"
   ],
   "host_permissions": [
     "http://127.0.0.1:*/*",
-    "http://localhost:*/*"
+    "http://localhost:*/*",
+    "<all_urls>"
   ],
   "icons": {
     "16": "assets/icons/icon-16.png",
