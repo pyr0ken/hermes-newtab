@@ -1,37 +1,95 @@
-// Raycast-Style Command Palette & Omni-Search
+// Hermes NewTab — Raycast-Style Command Palette & Smart Tab-Autocompletion
 
 class CommandPalette {
   constructor() {
     this.searchInput = document.getElementById('search-input');
     this.resultsDropdown = document.getElementById('search-results');
+    this.ghostLayer = document.getElementById('search-ghost-layer');
+    this.ghostMatchedEl = document.getElementById('ghost-matched-text');
+    this.ghostSuffixEl = document.getElementById('ghost-suffix-text');
+    this.tabChip = document.getElementById('tab-autocomplete-chip');
+    this.engineBadge = document.getElementById('search-engine-badge');
+    this.engineNameEl = document.getElementById('search-engine-name');
     this.quickTags = document.querySelectorAll('.quick-tag');
+
     this.results = [];
     this.selectedIndex = -1;
+    this.ghostText = '';
+    this.currentCompletion = null;
 
     this.searchEngines = {
-      '/g': { name: 'Google Search', url: 'https://www.google.com/search?q=' },
-      '/gh': { name: 'GitHub Search', url: 'https://github.com/search?q=' },
-      '/x': { name: 'X / Twitter Search', url: 'https://x.com/search?q=' },
-      '/p': { name: 'Perplexity AI', url: 'https://www.perplexity.ai/search?q=' },
-      '/yt': { name: 'YouTube Search', url: 'https://www.youtube.com/results?search_query=' },
-      '/w': { name: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Special:Search?search=' }
+      '/g': { name: 'Google', prefix: '/g ', placeholder: 'Search Google...', url: 'https://www.google.com/search?q=' },
+      '/gh': { name: 'GitHub', prefix: '/gh ', placeholder: 'Search GitHub repos & code...', url: 'https://github.com/search?q=' },
+      '/x': { name: 'X / Twitter', prefix: '/x ', placeholder: 'Search X (Twitter)...', url: 'https://x.com/search?q=' },
+      '/p': { name: 'Perplexity', prefix: '/p ', placeholder: 'Ask Perplexity AI...', url: 'https://www.perplexity.ai/search?q=' },
+      '/yt': { name: 'YouTube', prefix: '/yt ', placeholder: 'Search YouTube videos...', url: 'https://www.youtube.com/results?search_query=' },
+      '/w': { name: 'Wikipedia', prefix: '/w ', placeholder: 'Search Wikipedia articles...', url: 'https://en.wikipedia.org/wiki/Special:Search?search=' },
+      '/b': { name: 'Bookmarks', prefix: '/b ', placeholder: 'Filter bookmarks only...', isFilter: true }
     };
+
+    this.popularDomains = [
+      'github.com',
+      'claude.ai',
+      'chatgpt.com',
+      'perplexity.ai',
+      'deepseek.com',
+      'tradingview.com',
+      'tetherland.com',
+      'bitpin.ir',
+      'arxiv.org',
+      'huggingface.co',
+      'figma.com',
+      'google.com',
+      'youtube.com',
+      'x.com',
+      'reddit.com',
+      'wiki.archlinux.org',
+      'hermes-agent.nousresearch.com'
+    ];
+
+    this.localServices = [
+      { name: 'paperclip', port: 3100, url: 'http://localhost:3100', desc: 'Paperclip Control Plane' },
+      { name: 'oxiroute', port: 20200, url: 'http://localhost:20200', desc: 'Oxiroute AI Router' },
+      { name: 'omniroute', port: 20128, url: 'http://localhost:20128', desc: 'OmniRoute AI Gateway' },
+      { name: 'golestan', port: 7667, url: 'http://localhost:7667', desc: 'Golestan Portal API' },
+      { name: 'ayh', port: 3001, url: 'http://localhost:3001', desc: 'AYH Fullstack Admin' }
+    ];
   }
 
   init() {
+    this.refreshElements();
     this.setupKeyboardShortcuts();
-    this.setupInputListener();
+    this.setupInputListeners();
     this.setupQuickTags();
-    setTimeout(() => this.focusSearch(), 50);
+    this.setupDocumentClickListener();
+
+    setTimeout(() => {
+      this.focusSearch();
+    }, 60);
   }
 
+  refreshElements() {
+    this.searchInput = document.getElementById('search-input');
+    this.resultsDropdown = document.getElementById('search-results');
+    this.ghostLayer = document.getElementById('search-ghost-layer');
+    this.ghostMatchedEl = document.getElementById('ghost-matched-text');
+    this.ghostSuffixEl = document.getElementById('ghost-suffix-text');
+    this.tabChip = document.getElementById('tab-autocomplete-chip');
+    this.engineBadge = document.getElementById('search-engine-badge');
+    this.engineNameEl = document.getElementById('search-engine-name');
+    this.quickTags = document.querySelectorAll('.quick-tag');
+  }
+
+  /* ============================================================
+     KEYBOARD SHORTCUTS & LISTENERS
+     ============================================================ */
   setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-      // Ctrl+K or Cmd+K or Slash (when not in input)
+      // Global Ctrl+K / Cmd+K / Slash focus
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         this.focusSearch();
-      } else if (e.key === '/' && document.activeElement !== this.searchInput && document.activeElement.tagName !== 'TEXTAREA') {
+      } else if (e.key === '/' && document.activeElement !== this.searchInput && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         this.focusSearch();
       } else if (e.key === 'Escape') {
@@ -44,6 +102,38 @@ class CommandPalette {
     }
   }
 
+  setupInputListeners() {
+    if (!this.searchInput) return;
+
+    this.searchInput.addEventListener('input', (e) => {
+      this.onQueryChange(e.target.value);
+    });
+
+    this.searchInput.addEventListener('focus', () => {
+      const val = this.searchInput.value;
+      if (val && val.trim()) {
+        this.onQueryChange(val);
+      }
+    });
+  }
+
+  setupQuickTags() {
+    if (this.tabChip) {
+      this.tabChip.addEventListener('click', () => {
+        this.acceptGhostAutocomplete();
+      });
+    }
+  }
+
+  setupDocumentClickListener() {
+    document.addEventListener('click', (e) => {
+      const container = document.querySelector('.spotlight-search-container');
+      if (container && !container.contains(e.target)) {
+        this.hideResults();
+      }
+    });
+  }
+
   focusSearch() {
     if (!this.searchInput) return;
     this.searchInput.focus();
@@ -53,30 +143,106 @@ class CommandPalette {
   clearAndClose() {
     if (!this.searchInput) return;
     this.searchInput.value = '';
-    this.searchInput.blur();
+    this.clearGhostAutocomplete();
     this.hideResults();
+    this.searchInput.blur();
   }
 
-  setupQuickTags() {
-    this.quickTags.forEach(tag => {
-      tag.addEventListener('click', () => {
-        const prefix = tag.dataset.prefix;
-        if (!prefix || !this.searchInput) return;
-        this.searchInput.value = prefix;
-        this.searchInput.focus();
-        this.onQueryChange(prefix);
-      });
-    });
+  /* ============================================================
+     SMART AUTOCOMPLETE & GHOST TEXT (TAB COMPLETION)
+     ============================================================ */
+  clearGhostAutocomplete() {
+    this.ghostText = '';
+    this.currentCompletion = null;
+    if (this.ghostMatchedEl) this.ghostMatchedEl.textContent = '';
+    if (this.ghostSuffixEl) this.ghostSuffixEl.textContent = '';
+    if (this.tabChip) this.tabChip.style.display = 'none';
   }
 
-  setupInputListener() {
-    if (!this.searchInput) return;
+  updateGhostAutocomplete(rawInput) {
+    if (!rawInput || !rawInput.trim()) {
+      this.clearGhostAutocomplete();
+      return;
+    }
 
-    this.searchInput.addEventListener('input', (e) => {
-      this.onQueryChange(e.target.value);
-    });
+    const inputVal = rawInput;
+    const lowerInput = inputVal.toLowerCase();
+
+    // 1. Check search engine prefixes
+    const prefixCandidates = Object.values(this.searchEngines).map(e => e.prefix);
+    for (const prefix of prefixCandidates) {
+      if (prefix.toLowerCase().startsWith(lowerInput) && prefix.length > inputVal.length) {
+        this.setGhostMatch(inputVal, prefix.slice(inputVal.length), inputVal + prefix.slice(inputVal.length));
+        return;
+      }
+    }
+
+    // 2. Check local services
+    for (const svc of this.localServices) {
+      if (svc.name.toLowerCase().startsWith(lowerInput) && svc.name.length > inputVal.length) {
+        this.setGhostMatch(inputVal, svc.name.slice(inputVal.length), svc.name);
+        return;
+      }
+      const hostPort = `localhost:${svc.port}`;
+      if (hostPort.startsWith(lowerInput) && hostPort.length > inputVal.length) {
+        this.setGhostMatch(inputVal, hostPort.slice(inputVal.length), hostPort);
+        return;
+      }
+    }
+
+    // 3. Check popular domains
+    for (const domain of this.popularDomains) {
+      if (domain.toLowerCase().startsWith(lowerInput) && domain.length > inputVal.length) {
+        this.setGhostMatch(inputVal, domain.slice(inputVal.length), domain);
+        return;
+      }
+    }
+
+    // 4. Check bookmarks
+    if (window.bookmarksEngine && Array.isArray(window.bookmarksEngine.bookmarks)) {
+      for (const bm of window.bookmarksEngine.bookmarks) {
+        const d = bm.domain || '';
+        if (d.toLowerCase().startsWith(lowerInput) && d.length > inputVal.length) {
+          this.setGhostMatch(inputVal, d.slice(inputVal.length), d);
+          return;
+        }
+        const t = bm.title || '';
+        if (t.toLowerCase().startsWith(lowerInput) && t.length > inputVal.length) {
+          this.setGhostMatch(inputVal, t.slice(inputVal.length), t);
+          return;
+        }
+      }
+    }
+
+    // No matching ghost autocompletion
+    this.clearGhostAutocomplete();
   }
 
+  setGhostMatch(matchedPart, suffix, fullReplacement) {
+    this.ghostText = suffix;
+    this.currentCompletion = fullReplacement;
+
+    if (this.ghostMatchedEl) this.ghostMatchedEl.textContent = matchedPart;
+    if (this.ghostSuffixEl) this.ghostSuffixEl.textContent = suffix;
+    if (this.tabChip) this.tabChip.style.display = 'inline-flex';
+  }
+
+  acceptGhostAutocomplete() {
+    if (!this.currentCompletion || !this.searchInput) return false;
+    this.searchInput.value = this.currentCompletion;
+    this.searchInput.focus();
+    this.clearGhostAutocomplete();
+    this.onQueryChange(this.searchInput.value);
+    
+    // Set caret at end
+    const len = this.searchInput.value.length;
+    this.searchInput.setSelectionRange(len, len);
+    return true;
+  }
+
+  /* ============================================================
+     QUERY PROCESSING & SEARCH LOGIC
+     ============================================================ */
   tryEvaluateMath(expr) {
     if (!expr) return null;
     const sanitized = expr
@@ -86,9 +252,7 @@ class CommandPalette {
       .replace(/,/g, '')
       .trim();
 
-    // Check if expression consists only of digits, basic math symbols and parentheses
     if (!/^[\d\s\+\-\*\/\(\)\.\%]+$/.test(sanitized)) return null;
-    // Must contain at least one operator
     if (!/[\+\-\*\/]/.test(sanitized)) return null;
 
     try {
@@ -126,15 +290,25 @@ class CommandPalette {
     }
   }
 
+  updateEngineScopeBadge(engineName = 'All') {
+    if (this.engineNameEl) {
+      this.engineNameEl.textContent = engineName;
+    }
+  }
+
   onQueryChange(rawQuery) {
-    const query = rawQuery.trim();
+    const query = (rawQuery || '').trim();
+    this.updateGhostAutocomplete(rawQuery);
+
     if (!query) {
+      this.updateEngineScopeBadge('All');
       this.hideResults();
       return;
     }
 
-    // Check for direct URL / domain input (e.g. git.ir, github.com, http://localhost:3000)
+    // 1. Direct URL check
     if (this.isDirectUrl(query)) {
+      this.updateEngineScopeBadge('URL');
       const targetUrl = this.formatDirectUrl(query);
       const displayHost = targetUrl.replace(/^https?:\/\//i, '');
       const matchedBookmarks = window.bookmarksEngine 
@@ -144,7 +318,7 @@ class CommandPalette {
       this.results = [
         {
           type: 'url',
-          title: `Open https://${displayHost}`,
+          title: `Open ${displayHost}`,
           url: targetUrl,
           domain: displayHost,
           icon: 'external'
@@ -163,9 +337,10 @@ class CommandPalette {
       return;
     }
 
-    // Check for math calculator expression (e.g. 256 * 1024)
+    // 2. Math calculation check
     const mathResult = this.tryEvaluateMath(query);
     if (mathResult !== null) {
+      this.updateEngineScopeBadge('Calc');
       const formatted = Number.isInteger(mathResult) 
         ? mathResult.toLocaleString('en-US') 
         : mathResult.toLocaleString('en-US', { maximumFractionDigits: 6 });
@@ -182,42 +357,51 @@ class CommandPalette {
       return;
     }
 
-    // Explicit Bookmarks only filter: /b or /b query
-    if (query.startsWith('/b ') || query === '/b') {
-      const term = query.replace(/^\/b\s*/, '').trim();
-      const matchedBookmarks = window.bookmarksEngine 
-        ? window.bookmarksEngine.searchBookmarks(term) 
-        : [];
-      this.results = matchedBookmarks.map(bm => ({
-        type: 'bookmark',
-        title: bm.title,
-        url: bm.url,
-        domain: bm.domain,
-        category: bm.category,
-        favicon: bm.favicon
-      }));
-      this.selectedIndex = 0;
-      this.renderResults();
-      return;
-    }
-
-    // Check for prefix shortcuts (e.g. /g search term, /gh repo)
+    // 3. Prefix search shortcuts (/g, /gh, /x, /p, /yt, /w, /b)
     for (const [prefix, engine] of Object.entries(this.searchEngines)) {
       if (query.startsWith(prefix + ' ') || query === prefix || query.startsWith(prefix)) {
+        this.updateEngineScopeBadge(engine.name);
         const term = query.slice(prefix.length).trim();
-        this.results = [{
-          type: 'engine',
-          title: `Search with ${engine.name}: "${term || '...'}"`,
-          url: engine.url + encodeURIComponent(term),
-          icon: 'search'
-        }];
+
+        if (engine.isFilter) {
+          // Bookmarks filter
+          const matchedBookmarks = window.bookmarksEngine 
+            ? window.bookmarksEngine.searchBookmarks(term) 
+            : [];
+          this.results = matchedBookmarks.map(bm => ({
+            type: 'bookmark',
+            title: bm.title,
+            url: bm.url,
+            domain: bm.domain,
+            category: bm.category,
+            favicon: bm.favicon
+          }));
+        } else {
+          // Engine query
+          this.results = [{
+            type: 'engine',
+            title: `Search ${engine.name} for "${term || '...'}"`,
+            url: engine.url + encodeURIComponent(term),
+            icon: 'search',
+            queryText: term
+          }];
+        }
+
         this.selectedIndex = 0;
         this.renderResults();
         return;
       }
     }
 
-    // Search inside bookmarks with intelligent multi-token fuzzy matching
+    this.updateEngineScopeBadge('All');
+
+    // 4. Match local services
+    const matchedServices = this.localServices.filter(svc => {
+      const s = query.toLowerCase();
+      return svc.name.toLowerCase().includes(s) || String(svc.port).includes(s);
+    });
+
+    // 5. Match bookmarks
     const matchedBookmarks = window.bookmarksEngine 
       ? window.bookmarksEngine.searchBookmarks(query) 
       : [];
@@ -226,10 +410,18 @@ class CommandPalette {
       type: 'engine',
       title: `Search Google for "${query}"`,
       url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-      icon: 'search'
+      icon: 'search',
+      queryText: query
     };
 
     this.results = [
+      ...matchedServices.map(svc => ({
+        type: 'service',
+        title: `${svc.name} (${svc.desc})`,
+        url: svc.url,
+        domain: `localhost:${svc.port}`,
+        icon: 'server'
+      })),
       ...matchedBookmarks.map(bm => ({
         type: 'bookmark',
         title: bm.title,
@@ -245,6 +437,26 @@ class CommandPalette {
     this.renderResults();
   }
 
+  renderItemIcon(res) {
+    if (res.type === 'calculator') {
+      return `<span class="search-result-icon icon-calc" style="color:var(--status-online);">${ICONS.calculator}</span>`;
+    }
+    if (res.type === 'service') {
+      return `<span class="search-result-icon icon-service" style="color:var(--status-idle);">${ICONS.server}</span>`;
+    }
+    if (res.icon === 'external' || res.type === 'url') {
+      return `<span class="search-result-icon icon-url" style="color:var(--accent-blue);">${ICONS.external}</span>`;
+    }
+    if (res.favicon) {
+      const safeFav = this.escapeHtml(res.favicon);
+      return `<span class="search-result-icon icon-favicon"><img src="${safeFav}" class="search-favicon-img" alt="" onerror="this.classList.add('img-error');" />${ICONS.globe}</span>`;
+    }
+    return `<span class="search-result-icon icon-search" style="color:var(--accent-blue);">${ICONS.search}</span>`;
+  }
+
+  /* ============================================================
+     RENDER RESULTS
+     ============================================================ */
   renderResults() {
     if (!this.resultsDropdown) return;
 
@@ -255,43 +467,41 @@ class CommandPalette {
 
     this.resultsDropdown.innerHTML = this.results.map((res, idx) => {
       const isSelected = idx === this.selectedIndex ? 'selected' : '';
-      let iconHtml;
-      
-      if (res.type === 'calculator') {
-        iconHtml = `<div class="search-result-icon" style="display:flex;align-items:center;justify-content:center;color:var(--status-online);">${ICONS.calculator || ICONS.search}</div>`;
-      } else if (res.favicon) {
-        iconHtml = `<img src="${res.favicon}" class="search-result-icon" alt="" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2360a5fa\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/></svg>'">`;
-      } else {
-        iconHtml = `<div class="search-result-icon" style="display:flex;align-items:center;justify-content:center;color:var(--accent-blue);">${ICONS.search}</div>`;
-      }
+      const iconHtml = this.renderItemIcon(res);
 
       const catBadge = res.category 
-        ? `<span style="font-size: 0.65rem; padding: 0.1rem 0.4rem; background: rgba(59, 130, 246, 0.15); border-radius: 4px; color: var(--accent-blue); margin-left: 0.5rem; font-family: var(--font-mono);">${this.escapeHtml(res.category)}</span>` 
+        ? `<span style="font-size: 0.6rem; padding: 0.08rem 0.35rem; background: rgba(59, 130, 246, 0.15); border-radius: 4px; color: var(--accent-blue); font-family: var(--font-mono);">${this.escapeHtml(res.category)}</span>` 
         : '';
 
       return `
         <div class="search-result-item ${isSelected}" data-index="${idx}">
           ${iconHtml}
           <div class="search-result-info">
-            <div style="display: flex; align-items: center;">
+            <div class="search-result-title-row">
               <span class="search-result-title">${this.escapeHtml(res.title)}</span>
               ${catBadge}
             </div>
-            <span class="search-result-url">${this.escapeHtml(res.url)}</span>
+            <span class="search-result-url">${this.escapeHtml(res.url || res.query || '')}</span>
           </div>
         </div>
       `;
     }).join('');
 
     this.resultsDropdown.classList.add('active');
+    this.attachDropdownListeners();
+  }
 
-    // Attach click listeners to rows
+  attachDropdownListeners() {
+    if (!this.resultsDropdown) return;
+
+    // Row clicks
     this.resultsDropdown.querySelectorAll('.search-result-item').forEach(item => {
       item.addEventListener('click', (e) => {
         const idx = parseInt(item.dataset.index, 10);
         const openInNewTab = e.ctrlKey || e.metaKey || e.button === 1;
         this.navigateToResult(idx, openInNewTab);
       });
+
       item.addEventListener('auxclick', (e) => {
         if (e.button === 1) { // Middle click
           const idx = parseInt(item.dataset.index, 10);
@@ -305,12 +515,41 @@ class CommandPalette {
     if (this.resultsDropdown) {
       this.resultsDropdown.classList.remove('active');
     }
-    this.results = [];
+    this.clearGhostAutocomplete();
     this.selectedIndex = -1;
   }
 
+  /* ============================================================
+     KEYBOARD NAVIGATION & SUBMISSION
+     ============================================================ */
   handleInputKeydown(e) {
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'Tab') {
+      // 1. If ghost autocomplete is active, accept on Tab!
+      if (this.ghostText && this.currentCompletion) {
+        e.preventDefault();
+        this.acceptGhostAutocomplete();
+        return;
+      }
+
+      // 2. Otherwise navigate through results dropdown
+      if (this.results.length > 0) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          this.selectedIndex = (this.selectedIndex - 1 + this.results.length) % this.results.length;
+        } else {
+          this.selectedIndex = (this.selectedIndex + 1) % this.results.length;
+        }
+        this.updateSelectionHighlight();
+      }
+    } else if (e.key === 'ArrowRight') {
+      // Accept ghost completion if caret is at the end of input
+      if (this.ghostText && this.currentCompletion && this.searchInput) {
+        if (this.searchInput.selectionStart === this.searchInput.value.length) {
+          e.preventDefault();
+          this.acceptGhostAutocomplete();
+        }
+      }
+    } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (this.results.length > 0) {
         this.selectedIndex = (this.selectedIndex + 1) % this.results.length;
@@ -372,16 +611,17 @@ class CommandPalette {
       return;
     }
 
-    const query = (this.searchInput.value || '').trim();
+    const query = (this.searchInput ? this.searchInput.value : '').trim();
     if (!query) return;
 
-    // Check if query is direct URL / domain
+    // Check direct URL
     if (this.isDirectUrl(query)) {
-      this.openUrl(this.formatDirectUrl(query), openInNewTab);
+      const url = this.formatDirectUrl(query);
+      this.openUrl(url, openInNewTab);
       return;
     }
 
-    // Fallback to Google Search
+    // Default to Google search
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     this.openUrl(searchUrl, openInNewTab);
   }
@@ -397,10 +637,10 @@ class CommandPalette {
           this.searchInput.value = item.value;
           this.searchInput.select();
         }
-        this.results[index].title = `✓ Copied: ${item.value}`;
+        item.title = `✓ Copied: ${item.value}`;
         this.renderResults();
       } catch (e) {
-        console.warn('Clipboard write failed:', e);
+        console.warn('Clipboard copy failed:', e);
       }
       return;
     }

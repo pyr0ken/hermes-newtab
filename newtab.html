@@ -42,26 +42,30 @@
         <!-- Spotlight Command Bar -->
         <div class="spotlight-search-container">
           <div class="spotlight-search-box">
-            <div class="search-engine-selector" title="Search Scope">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span class="engine-name">All</span>
+            <div class="search-engine-selector" id="search-engine-badge" title="Search Scope / Mode">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span class="engine-name" id="search-engine-name">All</span>
             </div>
 
-            <input 
-              type="text" 
-              id="search-input" 
-              class="spotlight-search-input" 
-              placeholder="Search bookmarks, jump to web, or type a command..." 
-              autocomplete="off" 
-              spellcheck="false"
-              autofocus
-            />
+            <div class="spotlight-input-wrapper">
+              <div class="spotlight-ghost-layer" id="search-ghost-layer" aria-hidden="true">
+                <span class="ghost-matched-text" id="ghost-matched-text"></span><span class="ghost-suffix-text" id="ghost-suffix-text"></span>
+              </div>
+              <input 
+                type="text" 
+                id="search-input" 
+                class="spotlight-search-input" 
+                placeholder="Search bookmarks, jump to web, or type /..." 
+                autocomplete="off" 
+                spellcheck="false"
+                autofocus
+              />
+            </div>
 
             <div class="spotlight-hints">
-              <span class="quick-tag hint-chip" data-prefix="/g "><code>/g</code></span>
-              <span class="quick-tag hint-chip" data-prefix="/gh "><code>/gh</code></span>
-              <span class="quick-tag hint-chip" data-prefix="/x "><code>/x</code></span>
-              <span class="quick-tag hint-chip" data-prefix="/p "><code>/p</code></span>
+              <span class="hint-chip tab-hint-chip" id="tab-autocomplete-chip" title="Press Tab to complete suggestion" style="display: none;">
+                <code>Tab ⇥</code>
+              </span>
               <span class="search-shortcut-badge">
                 <span>Ctrl+K</span>
               </span>
