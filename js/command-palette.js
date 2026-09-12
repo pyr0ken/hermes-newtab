@@ -24,6 +24,7 @@ class CommandPalette {
       '/p': { name: 'Perplexity', prefix: '/p ', placeholder: 'Ask Perplexity AI...', url: 'https://www.perplexity.ai/search?q=' },
       '/yt': { name: 'YouTube', prefix: '/yt ', placeholder: 'Search YouTube videos...', url: 'https://www.youtube.com/results?search_query=' },
       '/w': { name: 'Wikipedia', prefix: '/w ', placeholder: 'Search Wikipedia articles...', url: 'https://en.wikipedia.org/wiki/Special:Search?search=' },
+      '/ai': { name: 'Hermes AI', prefix: '/ai ', placeholder: 'Ask Hermes AI Agent (Alt+C)...', isAgent: true },
       '/b': { name: 'Bookmarks', prefix: '/b ', placeholder: 'Filter bookmarks only...', isFilter: true }
     };
 
@@ -376,6 +377,23 @@ class CommandPalette {
             category: bm.category,
             favicon: bm.favicon
           }));
+        } else if (engine.isAgent) {
+          this.results = [{
+            type: 'agent',
+            title: `Ask Hermes AI: "${term || 'Open Side Panel'}"`,
+            url: '#hermes-ai-sidepanel',
+            icon: 'sparkle',
+            queryText: term,
+            action: () => {
+              chrome.runtime.sendMessage({ type: 'OPEN_SIDEPANEL' }, (res) => {
+                if (!res || !res.success) {
+                  chrome.sidePanel?.open?.({ windowId: chrome.windows?.WINDOW_ID_CURRENT }).catch(() => {
+                    console.log('Sidepanel open hint: Press Alt+C');
+                  });
+                }
+              });
+            }
+          }];
         } else {
           // Engine query
           this.results = [{
@@ -642,6 +660,12 @@ class CommandPalette {
       } catch (e) {
         console.warn('Clipboard copy failed:', e);
       }
+      return;
+    }
+
+    if (typeof item.action === 'function') {
+      item.action();
+      this.closeResults();
       return;
     }
 
