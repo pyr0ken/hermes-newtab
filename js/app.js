@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. Start Live Clock & Dual Date
   initClockAndDate();
 
+  if (window.layoutResizer) {
+    try { window.layoutResizer.init(); } catch (e) { console.warn('LayoutResizer init:', e); }
+  }
+
   if (window.dualCalendar) {
     try { window.dualCalendar.init(); } catch (e) { console.warn('DualCalendar init:', e); }
   }

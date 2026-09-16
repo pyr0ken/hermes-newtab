@@ -9,6 +9,25 @@
   <link rel="stylesheet" href="css/typography.css">
   <link rel="stylesheet" href="css/hermes-theme.css">
   <link rel="stylesheet" href="css/components.css">
+  
+  <script>
+    // Apply saved column widths immediately to prevent any layout shift (0ms FOUC)
+    (function() {
+      try {
+        const raw = localStorage.getItem('hermes_dashboard_col_widths');
+        if (raw) {
+          const cfg = JSON.parse(raw);
+          const root = document.documentElement;
+          if (cfg.left) root.style.setProperty('--col-left-width', cfg.left + 'px');
+          if (cfg.right) root.style.setProperty('--col-right-width', cfg.right + 'px');
+          if (cfg.dualLeft !== undefined && cfg.dualRight !== undefined) {
+            root.style.setProperty('--dual-left-ratio', cfg.dualLeft + 'fr');
+            root.style.setProperty('--dual-right-ratio', cfg.dualRight + 'fr');
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <!-- Ambient Atmosphere & High-Res Background Art -->
@@ -145,6 +164,19 @@
 
       </aside>
 
+      <!-- Left Column Resizer -->
+      <div class="col-resizer" id="resizer-left" data-resizer="left" title="Drag to resize column • Double-click to reset">
+        <div class="resizer-line"></div>
+        <div class="resizer-handle">
+          <svg viewBox="0 0 6 18" width="6" height="18" fill="currentColor">
+            <circle cx="3" cy="3" r="1.5"/>
+            <circle cx="3" cy="9" r="1.5"/>
+            <circle cx="3" cy="15" r="1.5"/>
+          </svg>
+        </div>
+        <div class="resizer-tooltip" id="resizer-tooltip-left"></div>
+      </div>
+
       <!-- Center Column: GitHub Activity & Bookmarks Explorer -->
       <section class="col-center">
         
@@ -229,6 +261,19 @@
             </div>
           </section>
 
+          <!-- Center Dual Resizer (Calendar vs Weather) -->
+          <div class="col-resizer dual-resizer" id="resizer-dual" data-resizer="dual" title="Drag to resize Calendar vs Weather • Double-click to reset">
+            <div class="resizer-line"></div>
+            <div class="resizer-handle">
+              <svg viewBox="0 0 6 18" width="6" height="18" fill="currentColor">
+                <circle cx="3" cy="3" r="1.5"/>
+                <circle cx="3" cy="9" r="1.5"/>
+                <circle cx="3" cy="15" r="1.5"/>
+              </svg>
+            </div>
+            <div class="resizer-tooltip" id="resizer-tooltip-dual"></div>
+          </div>
+
           <!-- Box 2: Weather & 7-Day Forecast Card -->
           <section class="dash-weather-card glass-panel" id="dash-weather-card">
             <div class="dash-card-header">
@@ -263,6 +308,19 @@
         </div>
 
       </section>
+
+      <!-- Right Column Resizer -->
+      <div class="col-resizer" id="resizer-right" data-resizer="right" title="Drag to resize column • Double-click to reset">
+        <div class="resizer-line"></div>
+        <div class="resizer-handle">
+          <svg viewBox="0 0 6 18" width="6" height="18" fill="currentColor">
+            <circle cx="3" cy="3" r="1.5"/>
+            <circle cx="3" cy="9" r="1.5"/>
+            <circle cx="3" cy="15" r="1.5"/>
+          </svg>
+        </div>
+        <div class="resizer-tooltip" id="resizer-tooltip-right"></div>
+      </div>
 
       <!-- Right Column: Crypto Market Ticker & Scratchpad -->
       <aside class="col-right">
@@ -372,6 +430,7 @@
 
   <!-- Scripts -->
   <script src="js/icons.js"></script>
+  <script src="js/layout-resizer.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/github-activity.js"></script>

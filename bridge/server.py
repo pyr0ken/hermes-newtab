@@ -39,11 +39,12 @@ WATCHED_SERVICES = {
         "start_cmd": "cargo run --release --bin oxiroute"
     },
     "golestan": {
-        "name": "Golestan Automation",
-        "port": 7667,
-        "desc": "Portal Client API",
+        "name": "Golestan Fullstack",
+        "port": 33000,
+        "ports": [33000, 37667],
+        "desc": "UI :33000 • API :37667",
         "workdir": "/home/omid/Code/fun/golestan-automation",
-        "start_cmd": "/home/omid/Code/fun/golestan-automation/.venv/bin/python main.py serve --port 7667"
+        "start_cmd": "/home/omid/Code/fun/golestan-automation/.venv/bin/python /home/omid/Code/fun/golestan-automation/dev.py"
     },
     "ayh": {
         "name": "AYH Fullstack",
@@ -214,7 +215,14 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                 ports_status = []
                 for p in port_list:
                     p_alive, p_lat = SystemMetrics.check_service_port(p)
-                    label = "Admin" if p == 3001 else ("API" if p == 8001 else f":{p}")
+                    if p in (3000, 33000):
+                        label = "UI"
+                    elif p in (7667, 37667, 8001):
+                        label = "API"
+                    elif p == 3001:
+                        label = "Admin"
+                    else:
+                        label = f":{p}"
                     ports_status.append({
                         "port": p,
                         "online": p_alive,
