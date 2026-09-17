@@ -53,7 +53,7 @@ class CommandPalette {
       { name: 'oxiroute', port: 20200, url: 'http://localhost:20200', desc: 'Oxiroute AI Router' },
       { name: 'omniroute', port: 20128, url: 'http://localhost:20128', desc: 'OmniRoute AI Gateway' },
       { name: 'golestan', port: 33000, url: 'http://localhost:33000', desc: 'Golestan Next.js & FastAPI' },
-      { name: 'ayh', port: 3001, url: 'http://localhost:3001', desc: 'AYH Fullstack Admin' }
+      { name: 'ayh', port: 33001, url: 'http://localhost:33001', desc: 'AYH Fullstack Admin' }
     ];
   }
 

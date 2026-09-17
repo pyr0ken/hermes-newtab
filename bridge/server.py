@@ -48,11 +48,11 @@ WATCHED_SERVICES = {
     },
     "ayh": {
         "name": "AYH Fullstack",
-        "port": 3001,
-        "ports": [3001, 8001],
-        "desc": "Admin :3001 • DRF :8001",
+        "port": 33001,
+        "ports": [33001, 38001],
+        "desc": "Admin :33001 • DRF :38001",
         "workdir": "/home/omid/Code/work/AYH01",
-        "start_cmd": "/home/omid/Code/work/AYH01/venv/bin/python manage.py runserver 8001 & (cd /home/omid/Code/work/AYH01/admin_panel && npm run dev -- -p 3001)"
+        "start_cmd": "/home/omid/Code/work/AYH01/venv/bin/python manage.py runserver 38001 & (cd /home/omid/Code/work/AYH01/admin_panel && npm run dev -- -p 33001)"
     }
 }
 
@@ -217,9 +217,9 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                     p_alive, p_lat = SystemMetrics.check_service_port(p)
                     if p in (3000, 33000):
                         label = "UI"
-                    elif p in (7667, 37667, 8001):
+                    elif p in (7667, 37667, 8001, 38001):
                         label = "API"
-                    elif p == 3001:
+                    elif p in (3001, 33001):
                         label = "Admin"
                     else:
                         label = f":{p}"
