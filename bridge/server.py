@@ -31,13 +31,6 @@ WATCHED_SERVICES = {
         "desc": "Local AI Gateway",
         "systemd": "omniroute.service"
     },
-    "oxiroute": {
-        "name": "Oxiroute AI",
-        "port": 20200,
-        "desc": "Rust AI Router",
-        "workdir": "/home/omid/Code/ai/oxiroute",
-        "start_cmd": "cargo run --release --bin oxiroute"
-    },
     "golestan": {
         "name": "Golestan Fullstack",
         "port": 33000,
@@ -53,6 +46,13 @@ WATCHED_SERVICES = {
         "desc": "Admin :33001 • DRF :38001",
         "workdir": "/home/omid/Code/work/AYH01",
         "start_cmd": "/home/omid/Code/work/AYH01/venv/bin/python manage.py runserver 38001 & (cd /home/omid/Code/work/AYH01/admin_panel && npm run dev -- -p 33001)"
+    },
+    "opendesign": {
+        "name": "Open Design",
+        "port": 33325,
+        "desc": "AI Design Workspace :33325",
+        "workdir": "/home/omid/Code/ai/open-design",
+        "start_cmd": "pnpm tools-dev start web --web-port 33325"
     }
 }
 
