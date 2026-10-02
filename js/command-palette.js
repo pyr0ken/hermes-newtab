@@ -53,7 +53,7 @@ class CommandPalette {
       { name: 'omniroute', port: 20128, url: 'http://localhost:20128', desc: 'OmniRoute AI Gateway' },
       { name: 'golestan', port: 33000, url: 'http://localhost:33000', desc: 'Golestan Next.js & FastAPI' },
       { name: 'ayh', port: 33001, url: 'http://localhost:33001', desc: 'AYH Fullstack Admin' },
-      { name: 'opendesign', port: 33325, url: 'http://localhost:33325', desc: 'Open Design Workspace' }
+      { name: 'opendesign', port: 43563, url: 'http://localhost:43563', desc: 'Open Design Workspace :43563' }
     ];
   }
 

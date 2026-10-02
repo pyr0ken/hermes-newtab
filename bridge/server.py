@@ -17,6 +17,18 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 PORT = 20250
 HOST = "127.0.0.1"
 
+# Ensure standard user local bins and tools (fnm, pnpm, cargo, python venvs) are available in PATH with highest priority
+USER_BIN_PATHS = [
+    os.path.expanduser("~/.local/share/fnm/aliases/default/bin"),
+    os.path.expanduser("~/.local/share/fnm/node-versions/v24.21.0/installation/bin"),
+    os.path.expanduser("~/.local/bin"),
+    os.path.expanduser("~/.cargo/bin"),
+    "/usr/local/bin"
+]
+existing_paths = [p for p in os.environ.get("PATH", "").split(os.pathsep) if p]
+valid_user_paths = [p for p in USER_BIN_PATHS if os.path.exists(p) and p not in existing_paths]
+os.environ["PATH"] = os.pathsep.join(valid_user_paths + existing_paths)
+
 # Known local developer service configurations & commands
 WATCHED_SERVICES = {
     "paperclip": {
@@ -49,10 +61,12 @@ WATCHED_SERVICES = {
     },
     "opendesign": {
         "name": "Open Design",
-        "port": 33325,
-        "desc": "AI Design Workspace :33325",
+        "port": 43563,
+        "ports": [43563, 33015],
+        "desc": "Web :43563 • Daemon :33015",
         "workdir": "/home/omid/Code/ai/open-design",
-        "start_cmd": "pnpm tools-dev start web --web-port 33325"
+        "start_cmd": "/home/omid/.local/bin/fnm exec --using=24 pnpm tools-dev start web --web-port 43563 --daemon-port 33015",
+        "stop_cmd": "/home/omid/.local/bin/fnm exec --using=24 pnpm tools-dev stop"
     }
 }
 
@@ -161,14 +175,26 @@ class ServiceManager:
                 info["start_cmd"],
                 shell=True,
                 cwd=workdir,
+                env=os.environ.copy(),
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 start_new_session=True
             )
 
-        # Brief pause to verify socket
-        time.sleep(0.6)
-        is_now_alive, lat = SystemMetrics.check_service_port(port)
+        # Poll briefly to verify socket
+        ports = info.get("ports", [port])
+        is_now_alive = False
+        lat = 0.0
+        for _ in range(25):
+            time.sleep(0.25)
+            for p in ports:
+                alive, p_lat = SystemMetrics.check_service_port(p)
+                if alive:
+                    is_now_alive = True
+                    lat = p_lat
+                    break
+            if is_now_alive:
+                break
         return {"success": True, "online": is_now_alive, "latency_ms": lat}
 
     @staticmethod
@@ -181,6 +207,18 @@ class ServiceManager:
         if systemd_svc:
             subprocess.run(["systemctl", "--user", "stop", systemd_svc], check=False)
 
+        stop_cmd = info.get("stop_cmd")
+        if stop_cmd:
+            workdir = info.get("workdir")
+            subprocess.run(
+                stop_cmd,
+                shell=True,
+                cwd=workdir,
+                env=os.environ.copy(),
+                capture_output=True,
+                check=False
+            )
+
         # Terminate by port(s)
         port = info["port"]
         ports = info.get("ports", [port])
@@ -190,9 +228,15 @@ class ServiceManager:
             except Exception:
                 pass
 
-        time.sleep(0.3)
+        time.sleep(0.4)
         is_still_alive, _ = SystemMetrics.check_service_port(port)
         return {"success": True, "online": is_still_alive}
+
+    @staticmethod
+    def restart_service(svc_key: str) -> dict:
+        ServiceManager.stop_service(svc_key)
+        time.sleep(0.5)
+        return ServiceManager.start_service(svc_key)
 
 
 class BridgeRequestHandler(BaseHTTPRequestHandler):
@@ -217,8 +261,12 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                     p_alive, p_lat = SystemMetrics.check_service_port(p)
                     if p in (3000, 33000):
                         label = "UI"
+                    elif p in (43563, 33325):
+                        label = "Web"
                     elif p in (7667, 37667, 8001, 38001):
                         label = "API"
+                    elif p in (33015,):
+                        label = "Daemon"
                     elif p in (3001, 33001):
                         label = "Admin"
                     else:
@@ -280,10 +328,14 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
         elif self.path == "/api/service/stop":
             res = ServiceManager.stop_service(svc_key)
             self._send_json(res)
+        elif self.path == "/api/service/restart":
+            res = ServiceManager.restart_service(svc_key)
+            self._send_json(res)
         elif self.path == "/api/service/toggle":
             info = WATCHED_SERVICES.get(svc_key)
             if info:
-                is_alive, _ = SystemMetrics.check_service_port(info["port"])
+                ports_list = info.get("ports", [info["port"]])
+                is_alive = any(SystemMetrics.check_service_port(p)[0] for p in ports_list)
                 if is_alive:
                     res = ServiceManager.stop_service(svc_key)
                 else:
