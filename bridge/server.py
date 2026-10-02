@@ -8,6 +8,7 @@ Zero external dependencies (uses standard Python 3.8+ library).
 import json
 import os
 import re
+import signal
 import socket
 import subprocess
 import sys
@@ -156,6 +157,90 @@ class SystemMetrics:
 
 class ServiceManager:
     @staticmethod
+    def _kill_ports_and_trees(ports: list):
+        """
+        Thoroughly terminates all processes (and their process groups/trees)
+        listening on or connected to the specified ports.
+        """
+        my_pid = os.getpid()
+        try:
+            my_pgid = os.getpgrp()
+        except Exception:
+            my_pgid = -1
+
+        pids = set()
+        for port in ports:
+            # 1. Use lsof to get all PIDs binding/connected to the port
+            try:
+                out = subprocess.check_output(["lsof", "-ti", f":{port}"], text=True, stderr=subprocess.DEVNULL).strip()
+                for line in out.splitlines():
+                    val = line.strip()
+                    if val.isdigit():
+                        p = int(val)
+                        if p != my_pid and p > 1:
+                            pids.add(p)
+            except Exception:
+                pass
+
+            # 2. Use fuser to get PIDs
+            try:
+                out = subprocess.check_output(["fuser", f"{port}/tcp"], stderr=subprocess.DEVNULL, text=True).strip()
+                for part in out.split():
+                    val = part.strip()
+                    if val.isdigit():
+                        p = int(val)
+                        if p != my_pid and p > 1:
+                            pids.add(p)
+            except Exception:
+                pass
+
+        if not pids:
+            return
+
+        # Find process groups (PGIDs) to kill the entire process tree
+        pgids = set()
+        for pid in list(pids):
+            try:
+                pgid = os.getpgid(pid)
+                if pgid > 1 and pgid != my_pgid:
+                    pgids.add(pgid)
+            except Exception:
+                pass
+
+        # 1. Graceful SIGTERM first
+        for pgid in pgids:
+            try:
+                os.killpg(pgid, signal.SIGTERM)
+            except Exception:
+                pass
+        for pid in pids:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except Exception:
+                pass
+
+        time.sleep(0.2)
+
+        # 2. Force SIGKILL on process groups and PIDs
+        for pgid in pgids:
+            try:
+                os.killpg(pgid, signal.SIGKILL)
+            except Exception:
+                pass
+        for pid in pids:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except Exception:
+                pass
+
+        # 3. Final sweep with fuser -k -9
+        for port in ports:
+            try:
+                subprocess.run(["fuser", "-k", "-9", f"{port}/tcp"], capture_output=True, check=False)
+            except Exception:
+                pass
+
+    @staticmethod
     def start_service(svc_key: str) -> dict:
         info = WATCHED_SERVICES.get(svc_key)
         if not info:
@@ -203,9 +288,17 @@ class ServiceManager:
         if not info:
             return {"success": False, "error": "Unknown service"}
 
+        port = info["port"]
+        ports = info.get("ports", [port])
         systemd_svc = info.get("systemd")
+
         if systemd_svc:
-            subprocess.run(["systemctl", "--user", "stop", systemd_svc], check=False)
+            subprocess.run(["systemctl", "--user", "stop", systemd_svc], capture_output=True, check=False)
+            for _ in range(15):
+                res = subprocess.run(["systemctl", "--user", "is-active", systemd_svc], capture_output=True, text=True, check=False)
+                if res.stdout.strip() != "active":
+                    break
+                time.sleep(0.15)
 
         stop_cmd = info.get("stop_cmd")
         if stop_cmd:
@@ -219,23 +312,46 @@ class ServiceManager:
                 check=False
             )
 
-        # Terminate by port(s)
-        port = info["port"]
-        ports = info.get("ports", [port])
-        for p in ports:
-            try:
-                subprocess.run(["fuser", "-k", f"{p}/tcp"], capture_output=True, check=False)
-            except Exception:
-                pass
+        # If not systemd, kill all process groups and port listeners
+        if not systemd_svc:
+            ServiceManager._kill_ports_and_trees(ports)
+        else:
+            # For systemd, ensure port is freed. If still bound after stop, clean up orphans
+            time.sleep(0.2)
+            is_alive = any(SystemMetrics.check_service_port(p)[0] for p in ports)
+            if is_alive:
+                ServiceManager._kill_ports_and_trees(ports)
 
-        time.sleep(0.4)
-        is_still_alive, _ = SystemMetrics.check_service_port(port)
-        return {"success": True, "online": is_still_alive}
+        time.sleep(0.25)
+        all_offline = not any(SystemMetrics.check_service_port(p)[0] for p in ports)
+        return {"success": True, "online": not all_offline}
 
     @staticmethod
     def restart_service(svc_key: str) -> dict:
+        info = WATCHED_SERVICES.get(svc_key)
+        if not info:
+            return {"success": False, "error": "Unknown service"}
+
+        systemd_svc = info.get("systemd")
+        if systemd_svc:
+            subprocess.run(["systemctl", "--user", "restart", systemd_svc], capture_output=True, check=False)
+            ports = info.get("ports", [info["port"]])
+            is_now_alive = False
+            lat = 0.0
+            for _ in range(25):
+                time.sleep(0.25)
+                for p in ports:
+                    alive, p_lat = SystemMetrics.check_service_port(p)
+                    if alive:
+                        is_now_alive = True
+                        lat = p_lat
+                        break
+                if is_now_alive:
+                    break
+            return {"success": True, "online": is_now_alive, "latency_ms": lat}
+
         ServiceManager.stop_service(svc_key)
-        time.sleep(0.5)
+        time.sleep(0.4)
         return ServiceManager.start_service(svc_key)
 
 
