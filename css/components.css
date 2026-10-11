@@ -2030,11 +2030,11 @@ body.is-resizing-columns iframe {
   display: inline-block;
 }
 
-.legend-cell.lvl-0 { background: rgba(255, 255, 255, 0.04); }
-.legend-cell.lvl-1 { background: #0e4429; }
-.legend-cell.lvl-2 { background: #006d32; }
-.legend-cell.lvl-3 { background: #26a641; }
-.legend-cell.lvl-4 { background: #39d353; }
+.legend-cell.lvl-0 { background: rgba(239, 68, 68, 0.25); }
+.legend-cell.lvl-1 { background: #0e3a6c; }
+.legend-cell.lvl-2 { background: #1d4ed8; }
+.legend-cell.lvl-3 { background: #3b82f6; }
+.legend-cell.lvl-4 { background: #60a5fa; }
 
 /* Floating Tooltip */
 .github-heatmap-tooltip {
@@ -2061,6 +2061,10 @@ body.is-resizing-columns iframe {
   font-size: 0.72rem;
   font-weight: 600;
   color: #38bdf8;
+}
+
+.tooltip-count.zero {
+  color: #f87171;
 }
 
 .tooltip-date {

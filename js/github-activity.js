@@ -8,11 +8,11 @@ class GitHubActivityEngine {
     this.tooltipEl = null;
 
     this.colors = {
-      0: 'rgba(255, 255, 255, 0.04)',
-      1: '#0e4429',
-      2: '#006d32',
-      3: '#26a641',
-      4: '#39d353'
+      0: 'rgba(239, 68, 68, 0.25)',
+      1: '#0e3a6c',
+      2: '#1d4ed8',
+      3: '#3b82f6',
+      4: '#60a5fa'
     };
 
     this.monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -217,7 +217,7 @@ class GitHubActivityEngine {
 
         if (this.tooltipEl) {
           this.tooltipEl.innerHTML = `
-            <div class="tooltip-count">${countText}</div>
+            <div class="tooltip-count ${count === 0 ? 'zero' : ''}">${countText}</div>
             <div class="tooltip-date">${formattedEn}</div>
             ${faStr}
           `;
